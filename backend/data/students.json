@@ -1,0 +1,27 @@
+[
+  {
+    "_id": "STU-001",
+    "userId": "USR-003",
+    "studentId": "STU-001",
+    "rollNumber": "CS-2023-001",
+    "name": "Ali Hassan",
+    "email": "student@oams.local",
+    "fatherName": "Hassan Ahmed",
+    "department": "Computer Science",
+    "batch": "2023",
+    "semester": "3rd",
+    "classId": "CLS-001",
+    "section": "A",
+    "dateOfBirth": "2002-05-15",
+    "gender": "male",
+    "phone": "+92-302-3456789",
+    "address": "House #123, Street 4, University Town",
+    "admissionDate": "2023-09-01",
+    "feeStatus": "paid",
+    "attendancePercentage": 85,
+    "cgpa": 3.5,
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.774Z",
+    "updatedAt": "2026-04-13T15:14:11.774Z"
+  }
+]

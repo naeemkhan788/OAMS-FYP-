@@ -1,0 +1,40 @@
+[
+  {
+    "_id": "MRK-001",
+    "studentId": "STU-001",
+    "subjectId": "SUB-001",
+    "classId": "CLS-001",
+    "examType": "midterm",
+    "theoryMarks": 45,
+    "practicalMarks": 35,
+    "totalMarks": 80,
+    "maxMarks": 100,
+    "grade": "A",
+    "gpa": 3.7,
+    "status": "passed",
+    "remarks": "Excellent performance",
+    "enteredBy": "TCH-001",
+    "enteredAt": "2026-04-13T15:14:11.818Z",
+    "createdAt": "2026-04-13T15:14:11.818Z",
+    "updatedAt": "2026-04-13T15:14:11.818Z"
+  },
+  {
+    "_id": "MRK-002",
+    "studentId": "STU-001",
+    "subjectId": "SUB-002",
+    "classId": "CLS-001",
+    "examType": "midterm",
+    "theoryMarks": 42,
+    "practicalMarks": 38,
+    "totalMarks": 80,
+    "maxMarks": 100,
+    "grade": "A",
+    "gpa": 3.7,
+    "status": "passed",
+    "remarks": "",
+    "enteredBy": "TCH-001",
+    "enteredAt": "2026-04-13T15:14:11.818Z",
+    "createdAt": "2026-04-13T15:14:11.818Z",
+    "updatedAt": "2026-04-13T15:14:11.818Z"
+  }
+]

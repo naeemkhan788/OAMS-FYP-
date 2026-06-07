@@ -1,0 +1,16 @@
+[
+  {
+    "_id": "FEE-001",
+    "studentId": "STU-001",
+    "semester": "3rd",
+    "totalAmount": 45000,
+    "paidAmount": 45000,
+    "dueAmount": 0,
+    "paymentStatus": "paid",
+    "paymentDate": "2026-04-13T15:14:11.838Z",
+    "paymentMethod": "bank_transfer",
+    "transactionId": "TXN-001-001",
+    "createdAt": "2026-04-13T15:14:11.838Z",
+    "updatedAt": "2026-04-13T15:14:11.838Z"
+  }
+]

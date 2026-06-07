@@ -1,0 +1,27 @@
+[
+  {
+    "_id": "TCH-001",
+    "userId": "USR-002",
+    "teacherId": "TCH-001",
+    "name": "Dr. Ahmad Khan",
+    "email": "teacher@oams.local",
+    "department": "Computer Science",
+    "designation": "Associate Professor",
+    "specialization": "Software Engineering",
+    "qualification": "PhD Computer Science",
+    "experience": "10 years",
+    "subjects": [
+      "SUB-001",
+      "SUB-002"
+    ],
+    "assignedClasses": [
+      "CLS-001"
+    ],
+    "phone": "+92-301-2345678",
+    "joinDate": "2018-08-15",
+    "salary": 120000,
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.757Z",
+    "updatedAt": "2026-04-13T15:14:11.757Z"
+  }
+]

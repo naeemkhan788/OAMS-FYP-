@@ -1,0 +1,48 @@
+[
+  {
+    "_id": "CLS-001",
+    "name": "BS Computer Science - 3rd Semester",
+    "code": "BS-CS-3A",
+    "department": "Computer Science",
+    "batch": "2023",
+    "semester": "3rd",
+    "section": "A",
+    "totalStudents": 45,
+    "classTeacherId": "TCH-001",
+    "subjects": [
+      "SUB-001",
+      "SUB-002",
+      "SUB-003",
+      "SUB-004",
+      "SUB-005"
+    ],
+    "roomNumber": "CS-Lab-1",
+    "schedule": "Morning (8:30 AM - 2:30 PM)",
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.710Z",
+    "updatedAt": "2026-04-13T15:14:11.710Z"
+  },
+  {
+    "_id": "CLS-002",
+    "name": "BS Computer Science - 3rd Semester",
+    "code": "BS-CS-3B",
+    "department": "Computer Science",
+    "batch": "2023",
+    "semester": "3rd",
+    "section": "B",
+    "totalStudents": 42,
+    "classTeacherId": "TCH-002",
+    "subjects": [
+      "SUB-001",
+      "SUB-002",
+      "SUB-003",
+      "SUB-004",
+      "SUB-005"
+    ],
+    "roomNumber": "CS-Lab-2",
+    "schedule": "Afternoon (2:30 PM - 8:30 PM)",
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.710Z",
+    "updatedAt": "2026-04-13T15:14:11.710Z"
+  }
+]

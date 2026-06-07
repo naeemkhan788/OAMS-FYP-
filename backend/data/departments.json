@@ -1,0 +1,28 @@
+[
+  {
+    "_id": "DEPT-001",
+    "name": "Computer Science",
+    "code": "CS",
+    "hodId": "TCH-005",
+    "totalTeachers": 12,
+    "totalStudents": 350,
+    "totalClasses": 8,
+    "establishedYear": 2005,
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.807Z",
+    "updatedAt": "2026-04-13T15:14:11.807Z"
+  },
+  {
+    "_id": "DEPT-002",
+    "name": "Software Engineering",
+    "code": "SE",
+    "hodId": "TCH-006",
+    "totalTeachers": 8,
+    "totalStudents": 280,
+    "totalClasses": 6,
+    "establishedYear": 2010,
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.807Z",
+    "updatedAt": "2026-04-13T15:14:11.807Z"
+  }
+]

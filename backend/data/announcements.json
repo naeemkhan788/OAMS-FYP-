@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "ANN-001",
+    "title": "Midterm Exam Schedule",
+    "content": "Midterm exams will start from 15th of next month. Please check your schedules.",
+    "type": "exam",
+    "priority": "high",
+    "targetAudience": "all",
+    "postedBy": "USR-001",
+    "postedAt": "2026-04-13T15:14:11.834Z",
+    "expiresAt": null,
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.834Z",
+    "updatedAt": "2026-04-13T15:14:11.834Z"
+  },
+  {
+    "_id": "ANN-002",
+    "title": "Fee Submission Deadline",
+    "content": "Last date for fee submission is 30th of this month.",
+    "type": "fee",
+    "priority": "high",
+    "targetAudience": "students",
+    "postedBy": "USR-001",
+    "postedAt": "2026-04-13T15:14:11.834Z",
+    "expiresAt": null,
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.834Z",
+    "updatedAt": "2026-04-13T15:14:11.834Z"
+  }
+]

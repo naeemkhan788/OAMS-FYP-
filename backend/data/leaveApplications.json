@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "LEAVE-001",
+    "applicantId": "STU-001",
+    "applicantType": "student",
+    "leaveType": "medical",
+    "startDate": "2024-04-15",
+    "endDate": "2024-04-17",
+    "totalDays": 3,
+    "reason": "Fever and flu",
+    "status": "pending",
+    "appliedAt": "2026-04-13T15:14:11.840Z",
+    "approvedBy": null,
+    "approvedAt": null,
+    "remarks": "",
+    "attachments": [],
+    "createdAt": "2026-04-13T15:14:11.840Z",
+    "updatedAt": "2026-04-13T15:14:11.840Z"
+  }
+]

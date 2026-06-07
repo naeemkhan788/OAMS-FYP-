@@ -1,0 +1,1640 @@
+{
+  "users": [
+    {
+      "_id": "0fb5eebe-6856-4569-bc84-247f1935d71e",
+      "name": "ihsankhan",
+      "email": "ihsankhan11@gmail.com",
+      "password": "$2a$10$fMlq7/2XAj6KBl2707SgO./MoiB3T1nM2PXbi3KGouT6oCPlemTtO",
+      "role": "student",
+      "createdAt": "2026-04-25T06:49:13.018Z"
+    },
+    {
+      "_id": "b8391682-d4e2-4cd5-b18f-8420ee9a9777",
+      "name": "Ahmad sir",
+      "email": "ahmadalikhan20@gmail.com",
+      "password": "$2a$10$etmPiCYUyebUoVG68ym6Eev6EOsnDSTXdnYH71IZZmkgniItYaIS.",
+      "role": "teacher",
+      "createdAt": "2026-04-25T06:49:55.430Z"
+    },
+    {
+      "_id": "fdcd372e-2b4c-4c1d-b78f-5c3e39d69646",
+      "name": "Bilal khan",
+      "email": "bilalkhan123@gmail.com",
+      "password": "$2a$10$XybV3IbN3uwYWtZ8pjMqw.V6D7F/s3hj1wKPSJFdAOUnRw2S7XSRO",
+      "role": "admin",
+      "createdAt": "2026-04-25T07:03:42.720Z",
+      "lastLogin": "2026-04-25T07:04:09.519Z"
+    },
+    {
+      "_id": "de82e1cc-846d-4533-bb4d-26aefb7b4573",
+      "name": "bilalali",
+      "email": "bilalkhan003@gmail.com",
+      "password": "$2a$10$SyNcEHfb71vRtZbPiErM/.mAnit1gnVCGf//mEuuU.RBp.nTkS6GC",
+      "role": "student",
+      "createdAt": "2026-04-25T07:06:19.874Z"
+    },
+    {
+      "_id": "abac60b1-710b-4890-bde5-9f64b68e23f5",
+      "name": "Ahmad Sir",
+      "email": "ahmadali99@gmail.com",
+      "password": "$2a$10$T0Lptc3ZAHvhCI4BqkIe6OubaiiFcTA1okltpQ9CuAevEXtBeik/W",
+      "role": "teacher",
+      "createdAt": "2026-04-25T07:06:57.470Z"
+    },
+    {
+      "_id": "ee3a73a2-6296-4218-88a6-33e3e302c93a",
+      "name": "Azan khan",
+      "email": "azankhan36@gmail.com",
+      "password": "$2a$10$61DRP5.VlTMw7q7QzOtE4u/.dK3ImIENpjLWxMtUxUypJ01bHiGMm",
+      "role": "admin",
+      "createdAt": "2026-04-25T07:13:28.318Z",
+      "lastLogin": "2026-04-25T07:13:44.726Z"
+    },
+    {
+      "_id": "b44349c2-0a83-4b39-a585-9203e063f2d1",
+      "name": "Ahmad Ali",
+      "email": "ahmadali66@gamil.com",
+      "password": "$2a$10$3EnzHr/6Ex4gJLdPSXmY1ec/TQYEC/FNoBYloYjgkIHZFnbk7lukK",
+      "role": "teacher",
+      "createdAt": "2026-04-25T07:14:43.009Z"
+    },
+    {
+      "_id": "9c54b9f6-1dbd-4716-924c-7b1aeb295324",
+      "name": "ihsan khan",
+      "email": "ihsankhan12@gmail.com",
+      "password": "$2a$10$O2HwdGFVTBfW2HsDdbWnMus3kAMTYKoEZGHji8MoHSg5LmZx/TYOa",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-25T07:22:33.892Z",
+      "lastLogin": "2026-04-25T07:22:48.705Z"
+    },
+    {
+      "_id": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
+      "name": "Ihtisham sir",
+      "email": "ihtishamkhan123@gamil.com",
+      "password": "$2a$10$oy.QvumVzrnRCEyl7Y3pReIgUQeEFWuDzzpyi5HUrA2ZEDu.X2XU6",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-25T07:23:37.896Z"
+    },
+    {
+      "_id": "f129be43-12e4-443f-ae0f-587b052a210a",
+      "name": "Asif khan",
+      "email": "asifkhan1234@gmail.com",
+      "password": "$2a$10$eiRJuks3ROcEt6jDgnprsOgs.6Zb2AXdT1E/lMm0ESyCsB78x95Ma",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-25T07:46:49.913Z"
+    },
+    {
+      "_id": "41c69134-e614-43a0-97a2-31afbaf9688e",
+      "name": "Naveed khan",
+      "email": "naveedkhan12@gmail.com",
+      "password": "$2a$10$yyyZMGwyoUKs5k.qudSm9OyFQEvIaQR3qvUXtqoDTMq2PVjP3BuS.",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T04:56:29.650Z",
+      "lastLogin": "2026-04-26T04:56:46.577Z"
+    },
+    {
+      "_id": "d2890f93-1e16-4ad7-8ff3-5730b823671b",
+      "name": "Naveed khan",
+      "email": "naveedkhan000@gamil.com",
+      "password": "$2a$10$jFG8jKigxR2XdYXXeW6SnOmfxd2gyFiwOFGvTCgr7S9.zQEhzhCW.",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T05:04:37.371Z",
+      "lastLogin": "2026-04-26T05:04:50.724Z"
+    },
+    {
+      "_id": "1d3c8123-3883-41da-9f30-cc689b53a4ea",
+      "name": "Naveed khan",
+      "email": "naveedkhan99@gmail.com",
+      "password": "$2a$10$/f0RfnZYiqdaHRqMBVeVH.VzgAtmxyhLawBknZTRjmK2XJawhTHAu",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T05:09:22.030Z",
+      "lastLogin": "2026-04-26T05:09:37.522Z"
+    },
+    {
+      "_id": "fee441e3-e5b6-4c78-95cb-330a9d56089a",
+      "name": "Naveed khan",
+      "email": "naveedkhan123@gmail.com",
+      "password": "$2a$10$eHSe1Hjbye6.8n1yngw6r.jJG6VQBWlPPVlgxABNkAS2Pixm8DCcq",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T05:17:56.062Z",
+      "lastLogin": "2026-04-26T05:18:12.054Z"
+    },
+    {
+      "_id": "600d481e-ec8f-4aad-a2ee-e7bc04699f9a",
+      "name": "Naveed khan",
+      "email": "naveedkhan111@gmail.com",
+      "password": "$2a$10$ENy2IL24EfuhL2POSgcW7O8WqmOr7IJEt/bNJKykamLSw7GBDc8dm",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T05:20:23.097Z"
+    },
+    {
+      "_id": "6a839530-03ad-4e79-b4d3-315a33f082ed",
+      "name": "Bilal khan",
+      "email": "bilalkhan88@gmail.com",
+      "password": "$2a$10$8.MixFivlgCfYJ7PnluIZuHD6op0y92AN0XuiV.T1tkwh/SfnsAaW",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T05:24:00.093Z",
+      "lastLogin": "2026-04-26T05:24:22.740Z"
+    },
+    {
+      "_id": "f44bfe6a-c01d-4bfb-b3e2-51facc7214e9",
+      "name": "Naveed khan",
+      "email": "naveedkhan12@gamil.com",
+      "password": "$2a$10$Maq.sHRBypFiwIom1QILjuPvKYCucsJ5SeHxg5UOzuHbpvCnbmayS",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T05:35:37.307Z",
+      "lastLogin": "2026-04-26T05:35:58.956Z"
+    },
+    {
+      "_id": "926761cc-8114-4b85-80a5-3830af038ed1",
+      "name": "Naeem Ali",
+      "email": "naeemkhan12@gamil.com",
+      "password": "$2a$10$xgqz4.YAQwfWWDbeuv2AdehsAVauvIImAg71UOM5/LO0Lsl7bVBMO",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T05:40:48.636Z",
+      "lastLogin": "2026-04-26T05:41:03.660Z"
+    },
+    {
+      "_id": "ff9e6b19-8bd2-45a8-b43e-7eb47a484062",
+      "name": "Waleed khan",
+      "email": "waleedkhan11@gamil.com",
+      "password": "$2a$10$GkvqKjjribOJdqsxcvVBE.g.giTP5RkSFU5pNJB61IEvXTKMKe0hO",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:03:00.787Z",
+      "lastLogin": "2026-04-26T06:03:18.686Z"
+    },
+    {
+      "_id": "7081449a-cf11-4e14-b6fd-4ce8585c3704",
+      "name": "Atif khan",
+      "email": "atifkhan12@gamil.com",
+      "password": "$2a$10$sWH7zonCqjy0oqbuK8wnZOm/ioM0ZhiUbFcdaasyFcTfG8iePwirO",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:09:23.560Z",
+      "lastLogin": "2026-04-26T06:09:38.838Z"
+    },
+    {
+      "_id": "0b7a7a43-c172-4518-a0c9-00aa59872be9",
+      "name": "Bilalkahn",
+      "email": "bilalkhan0@gmail.com",
+      "password": "$2a$10$8..amJLNW/CAKsuOkWb9jeBjBaFuqRhOPYUyKGvFLIiAv6TgHUWK2",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:10:13.161Z"
+    },
+    {
+      "_id": "20a3e8cc-9afb-451f-a7bd-5d4fb50a1057",
+      "name": "Naeem khan",
+      "email": "naeemkhan123@gamil.com",
+      "password": "$2a$10$KLZHrglqA5O4AOQzlIqdvuTxbuYcEfboyCV7JgH/DKIhMlviTpZ5y",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:11:46.614Z",
+      "lastLogin": "2026-04-26T06:12:04.274Z"
+    },
+    {
+      "_id": "8a0296bd-b98e-41ed-830c-75bda5c7d483",
+      "name": "Atif khan",
+      "email": "atifkhan33@gamil.com",
+      "password": "$2a$10$uKA/tiu7fxSheXwzde08QeAGTPiwDI6qZ1QFo5P4l9vJKzjTmbIGK",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:35:54.647Z"
+    },
+    {
+      "_id": "6b4159f0-eb2b-4a63-90eb-4629a1e2bcc5",
+      "name": "Atif khan",
+      "email": "atifkhan123@gamil.com",
+      "password": "$2a$10$I8.Gk66RcrP18hJMSouVj.Dvb13L1Sz/KuuIIe/aCJ6VSUny.nDym",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:36:44.275Z",
+      "lastLogin": "2026-04-26T06:37:00.149Z"
+    },
+    {
+      "_id": "170e7752-24a2-4fc1-ad10-0ebb72f75a4b",
+      "name": "intekhab  Sir",
+      "email": "intekhabalam11@gamil.com",
+      "password": "$2a$10$QlEQV5KWWtKCcb8uU76dd.eL7ZIkf.H6SUZMznlfMcRQvLS2WBPL6",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {
+        "department": "Computer Science",
+        "specialization": "DBMS",
+        "experience": "3"
+      },
+      "createdAt": "2026-04-26T06:41:52.645Z"
+    },
+    {
+      "_id": "10603815-5fd7-4d5d-8223-130a6da15e19",
+      "name": "sayyad Jan",
+      "email": "sayyadjan90@gamil.com",
+      "password": "$2a$10$6/KYHLbF5yHBOZ2.7A9yNuEwK7yQVuTh/tlbE1zHwp/IxB5/l.GbO",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:44:03.375Z",
+      "lastLogin": "2026-04-26T06:44:18.531Z"
+    },
+    {
+      "_id": "1aabcc5f-ca18-43ca-a134-755cec09a3f7",
+      "name": "ihsan khan",
+      "email": "ihsankhan0@gamil.com",
+      "password": "$2a$10$KaNSLzDc97p/h7EzbjRr6uzdyxWOqTMWC9zcqyt.5xz1uFZEeiHDa",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:45:37.809Z"
+    },
+    {
+      "_id": "38472116-1943-40a7-a994-cb7dba34eb45",
+      "name": "Naveed khan",
+      "email": "naveedkhan01@gmail.com",
+      "password": "$2a$10$6cHoDUoouAY9CDTr/gJvuOcFR6RL5Ej/c.CCf9YnJ4jFN0TyomQra",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:46:17.164Z"
+    },
+    {
+      "_id": "9031ecbf-de2e-433e-9cd6-c60de2bcc174",
+      "name": "Anwar Ali",
+      "email": "anwarali90@gamil.com",
+      "password": "$2a$10$1ndGZOqM6FQ2f0hFiz/Ok.trRU8FnAdgVupvgGAIjtZhDdgBpM/Du",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:55:53.163Z",
+      "lastLogin": "2026-04-26T06:56:10.256Z"
+    },
+    {
+      "_id": "110f497a-2a3d-497d-b8db-5f827ebc03b6",
+      "name": "Anwar ali",
+      "email": "anwarali900@gamil.com",
+      "password": "$2a$10$GU2a/2KldjqyLn2jycJTfecCNocEk2yVEOozEfqIXqtNh6SAQNrvW",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:57:38.207Z",
+      "lastLogin": "2026-04-26T06:57:57.580Z"
+    },
+    {
+      "_id": "637aae53-8058-4b2c-bb18-c0181b28beed",
+      "name": "ali ad",
+      "email": "alikhan0@gamil.com",
+      "password": "$2a$10$WVwLNFWtst/EIyc8liLpE.9WRajDCRY5IZIBFdSOYgP.o.tBEb82O",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T06:58:43.252Z"
+    },
+    {
+      "_id": "dc3c5e9c-3382-443a-a87f-51a644033cb8",
+      "name": "Atif Khan khan",
+      "email": "atifkhan1236@gamil.com",
+      "password": "$2a$10$r40hKSdAu7QdhJavF0O6nep5.1Q/78b7Vu1FDDghT6ejBjZQB2NWW",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T07:09:25.261Z"
+    },
+    {
+      "_id": "4f543a5c-27fe-42be-a5a7-9a5296862cd4",
+      "name": "Naeem khan",
+      "email": "naeemkhan120@gamil.com",
+      "password": "$2a$10$k/GkaSdhpYfKzvOvarQSS.oaqGeVf3i0h3h2DW82X/val5XCbBgSa",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T07:10:35.708Z"
+    },
+    {
+      "_id": "c6a06934-3308-4137-a937-52b3dc5e7a43",
+      "name": "asim khan",
+      "email": "asimkhan2@gamil.com",
+      "password": "$2a$10$8vE3nlwDQMepqT2pGcUmT.ladmKx4YrwrrRtGLCwdG/rEhc/gAC.a",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T07:22:22.198Z",
+      "lastLogin": "2026-04-26T07:22:35.527Z"
+    },
+    {
+      "_id": "8b325428-fb84-4538-acc4-f5825b6bd271",
+      "name": "yaseen khan",
+      "email": "yaseenkhan12@gamil.com",
+      "password": "$2a$10$g65dWnh6x8aPLa77THygiOsuR5S/J9rNxaInETT.4fZfpmu3r3CHu",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-26T07:27:55.168Z",
+      "lastLogin": "2026-04-26T07:28:11.696Z"
+    },
+    {
+      "_id": "23fb82bd-b21a-4232-8e6b-21a15d4dbfed",
+      "name": "Naveed khan",
+      "email": "naveedkhan00@gmail.com",
+      "password": "$2a$10$UjB3FYFaPd9pAgCxD2Mv4.W47djnSSY/lRxT7u4pjSD/lSpr689Vm",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-27T14:50:39.546Z"
+    },
+    {
+      "_id": "80e521f7-b3f1-41e5-bd62-ea7b59418287",
+      "name": "Naveed khan",
+      "email": "naveedkhan120@gamil.com",
+      "password": "$2a$10$virmbzvDRhMgwtdQ0WGQKO151Y23o6hDBuReA3W3lJLT2lwFewV9G",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-27T14:51:36.429Z",
+      "lastLogin": "2026-04-27T14:51:55.118Z"
+    },
+    {
+      "_id": "09ad992b-c495-4ffc-81e8-b4a74ef4ec14",
+      "name": "Khan",
+      "email": "khan908@gmail.com",
+      "password": "$2a$10$xiV7jQn1cAgupbeSEdrz6OmLFbiV0QcNOSogFbKM51/tomxlhrSQS",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-27T14:52:41.699Z"
+    },
+    {
+      "_id": "3779293d-1441-4b6a-82ff-9ecc94bcee1c",
+      "name": "Naveed khan",
+      "email": "naveedkhan66@gamil.com",
+      "password": "$2a$10$Fh6vFNUqPy7MdomvOBKOJegJSeiQ/ep.Qb7THHkL.uSzbDanRGeiq",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-27T15:03:15.990Z",
+      "lastLogin": "2026-04-27T15:03:34.886Z"
+    },
+    {
+      "_id": "30361189-99da-4469-845e-2466405684d2",
+      "name": "Ihsan khan",
+      "email": "ihsankhan890@gamil.com",
+      "password": "$2a$10$RFmffmnHIcEvvz2R1kHs1uA/yn6ry2NTYhOLAuEnV44euGdLut3b6",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-27T15:15:21.844Z",
+      "lastLogin": "2026-04-27T15:15:34.910Z"
+    },
+    {
+      "_id": "c4af7c3b-cea6-40d4-9480-25ecd6dea5aa",
+      "name": "jawad khan",
+      "email": "jawadkhan1@gmail.com",
+      "password": "$2a$10$LRNBZxdDOvMkK34raPr3uey7gZwgAI7qWyvGp1iOGj/MFiCzksKwW",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-29T11:42:42.313Z",
+      "lastLogin": "2026-04-29T11:42:57.741Z"
+    },
+    {
+      "_id": "5d330b92-219d-440f-a9d1-c7f01d873a12",
+      "name": "Asif Ali",
+      "email": "asifali89@gmail.com",
+      "password": "$2a$10$WQYEqSO.EO6dRzNlAHppZu9ygnAmZW4zP6mINeaq5ghMX3sQ6IPUm",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-29T15:06:23.938Z",
+      "lastLogin": "2026-04-29T15:06:40.246Z"
+    },
+    {
+      "_id": "37508a7c-b35b-40dd-a508-e4cc0333cf5e",
+      "name": "Admin khan",
+      "email": "admin@oams.com",
+      "password": "$2a$10$.6K/DN3Gg2PDPwPcc6ooq.BGgACyRJ8WZ6BzpU9PTxQMs0SfkStFK",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-29T15:18:04.612Z",
+      "lastLogin": "2026-06-03T05:14:53.901Z",
+      "id": "37508a7c-b35b-40dd-a508-e4cc0333cf5e"
+    },
+    {
+      "_id": "f91a4d1b-a76e-4a68-9122-969bb63c0d2e",
+      "name": "Naveed khan",
+      "email": "naveedkhan1234@gmail.com",
+      "password": "$2a$10$x3.Tdp7E4PyEJA5w5JxKzeBWZmch2IEqmj3qWI7EbisyaCqEqHx1q",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-29T15:34:54.674Z",
+      "lastLogin": "2026-04-29T15:35:10.189Z"
+    },
+    {
+      "_id": "0dec537e-1b02-4403-8d87-67782f1f6a66",
+      "name": "Naveed khan",
+      "email": "naveedkhan120@gmail.com",
+      "password": "$2a$10$aA67CAQPw1ekt0AbwQpqdevXIaSP0GvQmN8RaKRShKr6Q9ZMny.02",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-29T15:36:55.380Z"
+    },
+    {
+      "_id": "dcd68797-8c8d-46fa-bf99-b5bbde53a892",
+      "name": "Asif khan",
+      "email": "asifkhan11@gmail.com",
+      "password": "$2a$10$QptTH7TAzy42UlE2O8AQa.Wa4zB1H//KLHuTww.1/DWJcT1b0f1rS",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-29T15:38:17.465Z",
+      "lastLogin": "2026-04-29T15:38:36.509Z"
+    },
+    {
+      "_id": "4c1bba8e-77e3-4ede-bccf-5f05f0beff61",
+      "name": "Nvaeedkhan",
+      "email": "naveedkhan000@gmail.com",
+      "password": "$2a$10$pFBj.PYCE/S1qf3pRkCaeejytpPsb94/9qUevIBhMB6iODZvhPAnO",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-29T15:39:10.437Z"
+    },
+    {
+      "_id": "4f0200f7-9c32-47db-b6c0-c0a2746fe7a3",
+      "name": "Hammad khan",
+      "email": "hammadkhan78@gmail.com",
+      "password": "$2a$10$FInwOyZU9gPPrMGWRMIUMO36ju4t3XLtNfrsTef2bPF2he/YolsJW",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-04-29T15:52:59.333Z",
+      "lastLogin": "2026-04-29T15:53:14.380Z"
+    },
+    {
+      "_id": "0cf09bf2-59f3-42b4-af6b-126e1ecda7c8",
+      "name": "Bilal khan",
+      "email": "bilalkhan044@gmail.com",
+      "password": "$2a$10$Udzveq7wLdCwJz.l8JSwUe1EdByljD070Atni88k4ALoBAtjAwLIK",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-02T06:14:19.329Z",
+      "lastLogin": "2026-05-17T15:09:42.046Z",
+      "id": "0cf09bf2-59f3-42b4-af6b-126e1ecda7c8"
+    },
+    {
+      "_id": "1bbeafa5-7926-4d51-b604-e807b12237b3",
+      "name": "Bilal",
+      "email": "bilalkhan04@gmail.com",
+      "password": "$2a$10$xX1X4gETGUXxW1fd6dIwkOt.4M4pR6Jh8/YtSZ.xA87dAmoVRPewm",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-02T06:15:12.872Z"
+    },
+    {
+      "_id": "7ad7ca77-80c1-4690-b37f-d33ff682654c",
+      "name": "Ihtisham sir",
+      "email": "ihtishamkhan11@gmail.com",
+      "password": "$2a$10$G0CrgWI9L53uM7zr6wE9CuNtN81FcUi1Ce2J8WUFL8aF2.mRjkHeW",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-02T06:16:13.875Z"
+    },
+    {
+      "_id": "2d5b27cf-2771-43b3-a8eb-9c4f3fdaceb3",
+      "name": "Ahmad Sir",
+      "email": "ahmadalikhan23@gmail.com",
+      "password": "$2a$10$oaty/dJPEPInKtdOw2YOCeG2hIK9Yxm2F3UvgfC91XRz6oF/OikXS",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-02T06:18:42.460Z"
+    },
+    {
+      "_id": "4f7cdc3b-6cb9-44ce-bf3e-116d012fd3ce",
+      "name": "bilal",
+      "email": "bilalkhan000@gmail.com",
+      "password": "$2a$10$bm5P1nAuU3P38gMDP7OEnuMhhD.x0tfyJLA6PwUt55vZ9kf2DLeFa",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-02T06:20:13.902Z",
+      "lastLogin": "2026-05-17T11:29:31.687Z"
+    },
+    {
+      "_id": "f0346f75-2aed-42df-bfcf-531326185192",
+      "name": "Ali Haider",
+      "email": "alihaiderkhan083@gmail.com",
+      "password": "$2a$10$Uc6Y5m9wd/o4GbI2l2sFZ.kWHJUp..gUNJrh5nAU1qgojATDCFcIK",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-03T20:16:10.098Z",
+      "lastLogin": "2026-06-02T15:40:50.434Z",
+      "id": "f0346f75-2aed-42df-bfcf-531326185192"
+    },
+    {
+      "_id": "b58939a3-a786-4a89-a3b7-26b12d0c4d42",
+      "name": "Naveed khan",
+      "email": "naveedali120@gmail.com",
+      "password": "$2a$10$SReedvLGHvMGInQFcV6ixe04WK6rrB1VvK59JErwBsTvIClRmQNvy",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-06T04:17:28.837Z",
+      "lastLogin": "2026-05-06T04:17:46.529Z",
+      "id": "b58939a3-a786-4a89-a3b7-26b12d0c4d42"
+    },
+    {
+      "_id": "c7866141-96de-4ee7-81d6-995d9171bb5c",
+      "name": "khan",
+      "email": "khan000@gmail.com",
+      "password": "$2a$10$XWGcptS/Dm1WSRj9CSxpyOSCHK2cqRN1cCI/lqmddoWwbXasXqofS",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-06T04:25:40.196Z"
+    },
+    {
+      "_id": "5eb48a81-5ef1-45b9-926c-7e3a8b42a2ce",
+      "name": "munsif Khan",
+      "email": "munsifkhan33@gmail.com",
+      "password": "$2a$10$Q2TjRa64CIQastMPquDLPe8uP352uGifuRr.MaDOGK0LBKiEBbw/y",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-06T04:37:23.852Z",
+      "lastLogin": "2026-05-06T04:37:41.223Z"
+    },
+    {
+      "_id": "cfaf77d2-ed46-4953-ae88-099238130338",
+      "name": "Asif Khan",
+      "email": "asif123@gmail.com",
+      "password": "$2a$10$LpndOqLm5uf1kO609riKPekjTjACEZCVsZkuIzcGaetM7Up.c4Xg2",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-06T04:48:02.221Z",
+      "lastLogin": "2026-05-06T04:48:17.237Z",
+      "id": "cfaf77d2-ed46-4953-ae88-099238130338"
+    },
+    {
+      "_id": "1dd16c79-0211-4af4-987a-f10f9eea4754",
+      "name": "munsif ali",
+      "email": "musifkhan33@gmail.com",
+      "password": "$2a$10$rqjcetl72QVIeuqlL9Nk3.75apWBN4cw5TrrO17tzPUvnhbYsNYDS",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-06T04:50:51.833Z",
+      "lastLogin": "2026-05-06T04:51:06.590Z"
+    },
+    {
+      "_id": "7e588c4f-9f02-4b27-8a8a-8ceaad2cb7de",
+      "name": "Ali khan",
+      "email": "alikhan99@gmail.com",
+      "password": "$2a$10$Io7LzaOtWcM1Z2pcACNnZOUHFkV0PjgNHJN2TAwTFVFZ3Z.RBi0MO",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-07T03:51:27.734Z"
+    },
+    {
+      "_id": "e7c1d3c5-85c7-4d6b-8c60-d117c73370dd",
+      "name": "Naveed khan",
+      "email": "navedkhan22@gmail.com",
+      "password": "$2a$10$Zam4.EPT6kLYL0LEgFCsW.Um.JPkR/gRPxe9kt42dlNSWy4o/Rgve",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-07T03:52:27.026Z",
+      "lastLogin": "2026-05-07T03:52:49.584Z"
+    },
+    {
+      "_id": "328e1d52-5fa9-4fdc-9928-0304459d900a",
+      "name": "Ali Khan",
+      "email": "alikhan90@gmail.com",
+      "password": "$2a$10$2FjclPMS46ICoGXLIwo5reFOnGgMWCslNRq9bKwF06tl6g.fDkEwK",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-07T04:10:06.648Z",
+      "lastLogin": "2026-05-07T04:10:21.557Z",
+      "id": "328e1d52-5fa9-4fdc-9928-0304459d900a"
+    },
+    {
+      "_id": "ce3d25c5-fbc8-4574-9307-3a7c67f457fc",
+      "name": "Bilal khan",
+      "email": "bilalali123@gmail.com",
+      "password": "$2a$10$fjbCBvAfN.FlLqeEDpmkKeUymvoT8XsWNsTbaF0NQeF3YqL0rCSfi",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-07T04:13:21.656Z",
+      "lastLogin": "2026-05-07T04:13:38.700Z",
+      "id": "ce3d25c5-fbc8-4574-9307-3a7c67f457fc"
+    },
+    {
+      "_id": "569374a7-5ba7-469e-bffc-694032c74ef9",
+      "name": "Atif Khan khan",
+      "email": "atifkhan22@gmail.com",
+      "password": "$2a$10$7UmyVFK6SwCtjKBRfHm1Kuq0.snoJEFhNzevu8rToEgzK9yDvU.Y.",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-07T04:18:49.005Z",
+      "lastLogin": "2026-05-07T04:19:05.553Z",
+      "id": "569374a7-5ba7-469e-bffc-694032c74ef9"
+    },
+    {
+      "_id": "a94a9ff4-0539-4269-847c-3b010e8060d5",
+      "name": "Asif Khan",
+      "email": "asifkhan33@gmail.com",
+      "password": "$2a$10$faFAPDsIqWkXYtd/ZdJk8eyM2FIwrjBMd1JfAsC84HaEgTuNGlXSO",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-07T04:28:43.834Z",
+      "lastLogin": "2026-05-07T04:28:57.657Z"
+    },
+    {
+      "_id": "f055c21f-c52e-4d3b-82f2-126896166eaf",
+      "name": "Basharat Khan",
+      "email": "bashrat@gmail.com",
+      "password": "$2a$10$EMiDbG0OZIxYnt5AesApbuL0HUj3aEK.M0uJyt0xUsYjKBG0B1tY6",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-17T15:10:38.898Z",
+      "lastLogin": "2026-05-31T19:16:30.148Z",
+      "id": "f055c21f-c52e-4d3b-82f2-126896166eaf"
+    },
+    {
+      "_id": "92bd58cf-a2d4-40e6-b11f-eff488922adf",
+      "name": "Bilal Khan",
+      "email": "bilalali33@gmail.com",
+      "password": "$2a$10$HDsa0dN3pk1Y1nSWPzg63Ou3AATMHlnRaW6TxCBDA1esdfoBRjidy",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-20T07:13:00.874Z",
+      "lastLogin": "2026-05-20T07:13:16.771Z",
+      "id": "92bd58cf-a2d4-40e6-b11f-eff488922adf"
+    },
+    {
+      "_id": "acaecc6d-d775-4e15-bf59-3be0d999a320",
+      "name": "Bilal ali",
+      "email": "bilalali22@gmail.com",
+      "password": "$2a$10$0k2pI2K74wutN8AmxlNgkusfQHUXknJ50MH1JcoWKDqE0LRNfRkTa",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-20T07:14:22.600Z",
+      "lastLogin": "2026-05-20T07:18:14.849Z",
+      "id": "acaecc6d-d775-4e15-bf59-3be0d999a320"
+    },
+    {
+      "_id": "b07ea629-837e-491c-99d0-899bba6dc11a",
+      "name": "ahmad Ali",
+      "email": "ahmadali11@gmail.com",
+      "password": "$2a$10$J68GxHrwx0Iai3Y/kUcPHOsJ2rkVG8N03AzWNM9Qa5CKdUAV5WhWW",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-20T07:20:42.924Z",
+      "lastLogin": "2026-05-21T05:17:03.097Z",
+      "id": "b07ea629-837e-491c-99d0-899bba6dc11a"
+    },
+    {
+      "_id": "98196437-92fc-4912-973b-b39108fa5522",
+      "name": "Naveed khan",
+      "email": "naveedkhan11@gmail.com",
+      "password": "$2a$10$Gid846XsC.Yg9vrt77o3BOZO0XRgfBVhZTKcqa8B0RA9B2oe7tuqm",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-21T05:17:45.144Z",
+      "lastLogin": "2026-05-21T05:17:55.622Z",
+      "id": "98196437-92fc-4912-973b-b39108fa5522"
+    },
+    {
+      "_id": "d2aeb0d3-99eb-476f-ae61-c65bcce0ac3d",
+      "name": "Bashrat  Ali",
+      "email": "bashratali@gmail.com",
+      "password": "$2a$10$N1tOLOXMSh.X43faiGWzHe9kcp4ZkyzoCQhRYraa2yaKtdlwYAqsm",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-31T19:19:24.298Z",
+      "lastLogin": "2026-05-31T19:22:22.938Z",
+      "id": "d2aeb0d3-99eb-476f-ae61-c65bcce0ac3d"
+    },
+    {
+      "_id": "2701fcae-c364-4e25-8af1-92db9ddf7ec0",
+      "name": "Mazhar khan",
+      "email": "mazharkhan@gmail.com",
+      "password": "$2a$10$0Jol8N6WRtPeMfVzofuhneD56aRYWc.9QLnpdDtEGghL4H6LajkLu",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-05-31T19:57:16.530Z",
+      "lastLogin": "2026-05-31T20:02:08.728Z"
+    },
+    {
+      "_id": "b54dbb5c-707c-488f-8f04-ee3597ee9667",
+      "name": "Bilal Khan",
+      "email": "bilalali11@gmail.com",
+      "password": "$2a$10$UwKkF6HrO3QrxbQHXUap/eqn5/4E76NVI4PDtmTNcJMyNpLnWvJQu",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-02T15:19:48.280Z",
+      "lastLogin": "2026-06-02T15:20:12.882Z",
+      "id": "b54dbb5c-707c-488f-8f04-ee3597ee9667"
+    },
+    {
+      "_id": "9c0d9822-fe46-422c-b4f7-7328bbac8890",
+      "name": "Atifkhan",
+      "email": "atifkhan12@gmail.com",
+      "password": "$2a$10$nfm7YoJ6xgAkMlB7cKjAKueTyOrEDn/7egPLgV2b8V64IEwjf8NUG",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-02T15:21:03.473Z"
+    },
+    {
+      "_id": "7efc7d42-8abf-4714-9f99-a167f9168449",
+      "name": "Muhammad Zakerya",
+      "email": "zakerya@gmail.com",
+      "password": "$2a$10$Q87OWrAIgAne27ROSjlRXuHC/T3nkeRXGA.Ww4ASRjwJGOfdfHbOS",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-02T15:30:47.165Z",
+      "lastLogin": "2026-06-02T15:31:48.516Z",
+      "id": "7efc7d42-8abf-4714-9f99-a167f9168449"
+    },
+    {
+      "_id": "54291b84-69c8-4bf2-84ca-8396d7f876f5",
+      "name": "xyz kHAN",
+      "email": "xyz@gmail.com",
+      "password": "$2a$10$kBlgyNW/DEI/AaKeDT1Cnu1OWMEdBkQMJLtL1npvSZI4srBK3GWqq",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-02T15:38:33.820Z",
+      "lastLogin": "2026-06-02T15:38:48.299Z",
+      "id": "54291b84-69c8-4bf2-84ca-8396d7f876f5"
+    },
+    {
+      "_id": "0df0d572-0a21-4d75-b474-d65928555fb3",
+      "name": "ABC bc",
+      "email": "admin@abc.com",
+      "password": "$2a$10$uiMhDK.CM94rAWP4QMW4se5sptPerT09EieyNzxQFuapHkp6/2L3e",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-03T05:11:01.971Z",
+      "lastLogin": "2026-06-03T05:11:24.753Z",
+      "id": "0df0d572-0a21-4d75-b474-d65928555fb3"
+    },
+    {
+      "_id": "540dcfba-4c11-405a-9574-035b8b6ec739",
+      "name": "az zz",
+      "email": "sayyadjan91@gamil.com",
+      "password": "$2a$10$I9ul4ytQKa/zzz7ZAluY6.DJPS8srXxwpBKBt.flNxoS8aEQdZaG.",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-03T05:17:41.271Z"
+    },
+    {
+      "_id": "692682df-6c26-421a-a9df-3df1adae595c",
+      "name": "Atif Khan khan",
+      "email": "atifkhan21@gmail.com",
+      "password": "$2a$10$E.8O3EFW1suywJQnTbVgBONyiCfe0nMwc74MSUr644nAid3ZAV4iy",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-03T05:19:16.223Z",
+      "lastLogin": "2026-06-03T05:19:29.399Z",
+      "id": "692682df-6c26-421a-a9df-3df1adae595c"
+    },
+    {
+      "_id": "74d7c5ce-aa5c-4995-a4ef-42962a9d6ff6",
+      "name": "Yahya sir",
+      "email": "yahyasir12@gmail.com",
+      "password": "$2a$10$bQm/txGLYyysNPzu0d0xA.Wsvxr7sxixmqbmHyZSsDi538R.pNT3S",
+      "role": "teacher",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-03T05:22:12.307Z",
+      "lastLogin": "2026-06-03T05:40:28.077Z",
+      "id": "74d7c5ce-aa5c-4995-a4ef-42962a9d6ff6"
+    },
+    {
+      "_id": "ac81de9c-08b2-4878-b227-ce8ae4bf061f",
+      "name": "Atif Khan khan",
+      "email": "atifkhan11@gmail.com",
+      "password": "$2a$10$a4A7Tx6XDWTFQRnN4EhiieVyJqlE1xlnVEhNRlKw0Sf5PIlOyizti",
+      "role": "student",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-03T05:28:01.472Z",
+      "lastLogin": "2026-06-03T05:43:46.559Z",
+      "id": "ac81de9c-08b2-4878-b227-ce8ae4bf061f"
+    },
+    {
+      "_id": "d744e224-9e3b-4709-be2e-d4d85a43dbb7",
+      "name": "Bilal khan",
+      "email": "bilalkhan34@gmail.com",
+      "password": "$2a$10$qlpu6Jz/PrRau/6yu3D9yOS7zRw7v1zUuANgt5P7AAqe6SoBT/BE.",
+      "role": "admin",
+      "isActive": true,
+      "profile": {},
+      "createdAt": "2026-06-06T10:27:01.342Z",
+      "lastLogin": "2026-06-06T10:27:12.768Z"
+    }
+  ],
+  "classes": [
+    {
+      "_id": "0bac7902-7d2e-43f3-9e97-02f8d416ab22",
+      "name": "DSA",
+      "code": "1204",
+      "grade": 11,
+      "section": "C",
+      "teacher": "ff9e6b19-8bd2-45a8-b43e-7eb47a484062",
+      "room": "3",
+      "capacity": 9,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-26T05:05:21.742Z"
+    },
+    {
+      "_id": "be0a1580-a496-442c-9632-b24a100a272e",
+      "name": "NLP",
+      "code": "2305",
+      "grade": 11,
+      "section": "B",
+      "teacher": "b44349c2-0a83-4b39-a585-9203e063f2d1",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-26T05:10:14.207Z"
+    },
+    {
+      "_id": "2b665503-4c60-4eae-9475-f0f18e1452e0",
+      "name": "NLP",
+      "code": "1234",
+      "grade": 11,
+      "section": "B",
+      "teacher": "b8391682-d4e2-4cd5-b18f-8420ee9a9777",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-26T05:10:58.594Z"
+    },
+    {
+      "_id": "ccdc76fb-3c1a-48b6-b8e1-82ac1ae3e6b1",
+      "name": "DSA",
+      "code": "3456",
+      "grade": 1,
+      "section": "B",
+      "teacher": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-26T05:25:26.442Z"
+    },
+    {
+      "_id": "ac35ed55-03c5-4926-a645-16aba338c0bd",
+      "name": "DSA",
+      "code": "8909",
+      "grade": 4,
+      "section": "B",
+      "teacher": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
+      "room": "4",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-26T05:37:53.363Z"
+    },
+    {
+      "_id": "5fcec52b-46b4-4f73-8fcf-2f83d98afa1e",
+      "name": "DSA",
+      "code": "7890",
+      "semester": "3",
+      "section": "C",
+      "room": "3",
+      "capacity": 12,
+      "academicYear": "2026",
+      "teacher": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
+      "startDate": "2026-08-02",
+      "startTime": "09:30",
+      "endTime": "11:00",
+      "grade": 3,
+      "schedule": {
+        "startDate": "2026-08-02",
+        "startTime": "09:30",
+        "endTime": "11:00"
+      },
+      "students": [],
+      "createdAt": "2026-04-26T06:39:31.980Z"
+    },
+    {
+      "_id": "8b6277e3-2b3a-4b47-b94d-f8e76c9a8add",
+      "name": "operating",
+      "code": "os200",
+      "grade": 3,
+      "section": "B",
+      "room": "3",
+      "capacity": 30,
+      "academicYear": "2026",
+      "teacher": "110f497a-2a3d-497d-b8db-5f827ebc03b6",
+      "students": [],
+      "createdAt": "2026-04-26T07:00:17.540Z"
+    },
+    {
+      "_id": "7cf9e283-aba6-4ad4-bb5e-04181a5c3da5",
+      "name": "NLP",
+      "code": "6090",
+      "grade": 7,
+      "section": "C",
+      "room": "2",
+      "capacity": 30,
+      "academicYear": "2026",
+      "teacher": "110f497a-2a3d-497d-b8db-5f827ebc03b6",
+      "students": [],
+      "createdAt": "2026-04-26T07:11:35.028Z"
+    },
+    {
+      "_id": "af6b1dfd-89cd-455e-a8f9-4c8362583c29",
+      "name": "DSA",
+      "code": "3030",
+      "grade": 3,
+      "section": "A",
+      "teacher": "170e7752-24a2-4fc1-ad10-0ebb72f75a4b",
+      "room": "2",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-26T07:26:26.708Z"
+    },
+    {
+      "_id": "a81541a2-a654-457b-a6d6-fd5cc7893111",
+      "name": "operting system",
+      "code": "60789",
+      "grade": 3,
+      "section": "B",
+      "teacher": "09ad992b-c495-4ffc-81e8-b4a74ef4ec14",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-27T14:54:13.762Z"
+    },
+    {
+      "_id": "6d6995b8-8ee1-431b-9286-b1b67bcefa17",
+      "name": "DSA",
+      "code": "3399",
+      "grade": 6,
+      "section": "B",
+      "teacher": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
+      "room": "FF10",
+      "capacity": 30,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-27T15:05:45.657Z"
+    },
+    {
+      "_id": "2ca64028-b449-4b8a-b0ff-9cd02d896293",
+      "name": "DSA",
+      "code": "35690",
+      "grade": 3,
+      "section": "A",
+      "teacher": "170e7752-24a2-4fc1-ad10-0ebb72f75a4b",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-27T15:16:16.188Z"
+    },
+    {
+      "_id": "ba92d515-10e2-45e2-b230-704834d2a5f4",
+      "name": "DSA",
+      "code": "12789",
+      "grade": 3,
+      "section": "A",
+      "teacher": "170e7752-24a2-4fc1-ad10-0ebb72f75a4b",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-27T16:08:59.035Z"
+    },
+    {
+      "_id": "52b17e87-3149-4d8b-88a2-17c1b8cf036d",
+      "name": "DSA",
+      "code": "2345",
+      "grade": 3,
+      "section": "A",
+      "teacher": "170e7752-24a2-4fc1-ad10-0ebb72f75a4b",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-29T11:43:33.505Z"
+    },
+    {
+      "_id": "65cef930-b11f-4629-b431-964670e70b9c",
+      "name": "DLD",
+      "code": "3089",
+      "grade": 2,
+      "section": "B",
+      "teacher": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-29T15:07:52.971Z"
+    },
+    {
+      "_id": "713ee8c7-1a10-4f50-b8f6-ed1d32a30800",
+      "name": "DLD",
+      "code": "23089",
+      "grade": 2,
+      "section": "A",
+      "teacher": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-04-29T15:39:37.192Z"
+    },
+    {
+      "_id": "e5002148-6d81-4269-9256-1396c0ba8c2f",
+      "name": "TOA",
+      "code": "5656",
+      "grade": 5,
+      "section": "B",
+      "teacher": "110f497a-2a3d-497d-b8db-5f827ebc03b6",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-05-06T04:26:51.202Z"
+    },
+    {
+      "_id": "ca0c7007-8713-4d6e-ba41-d3170d019563",
+      "name": "NLP",
+      "code": "0000",
+      "grade": 6,
+      "section": "B",
+      "teacher": "b44349c2-0a83-4b39-a585-9203e063f2d1",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-05-07T04:11:26.334Z"
+    },
+    {
+      "_id": "b8bf5248-d409-4153-9a0f-3be589093d4a",
+      "name": "C++",
+      "code": "0123",
+      "grade": 4,
+      "section": "B",
+      "teacher": "f0346f75-2aed-42df-bfcf-531326185192",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [
+        "d2aeb0d3-99eb-476f-ae61-c65bcce0ac3d",
+        "2701fcae-c364-4e25-8af1-92db9ddf7ec0",
+        "7efc7d42-8abf-4714-9f99-a167f9168449"
+      ],
+      "createdAt": "2026-05-07T04:19:59.734Z"
+    },
+    {
+      "_id": "637c31ce-91a7-455a-8781-60961cf2d67e",
+      "name": "DSA",
+      "code": "CU1122",
+      "grade": 6,
+      "section": "C",
+      "teacher": "f0346f75-2aed-42df-bfcf-531326185192",
+      "room": "FF10",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-05-20T05:21:57.814Z"
+    },
+    {
+      "_id": "15ab6a7b-396b-46a6-84f4-622e79d93892",
+      "name": "OS",
+      "code": "CU5656",
+      "grade": 10,
+      "section": "B",
+      "teacher": "f0346f75-2aed-42df-bfcf-531326185192",
+      "room": "GF7",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-05-20T05:26:10.273Z"
+    },
+    {
+      "_id": "41eda272-ae65-434a-b4df-50fd6a4d6e79",
+      "name": "operting system",
+      "code": "2020",
+      "grade": 3,
+      "section": "B",
+      "teacher": "170e7752-24a2-4fc1-ad10-0ebb72f75a4b",
+      "room": "2",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-05-20T07:15:18.739Z"
+    },
+    {
+      "_id": "c85964ae-8a6f-490d-b536-24e92d353976",
+      "name": "DLD",
+      "code": "34588",
+      "grade": 4,
+      "section": "B",
+      "teacher": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-05-21T05:18:42.529Z"
+    },
+    {
+      "_id": "f7d4b7f6-c8d2-4abf-a610-f47755c5c8ba",
+      "name": "ICT",
+      "code": "2222",
+      "grade": 2,
+      "section": "A",
+      "teacher": "9c0d9822-fe46-422c-b4f7-7328bbac8890",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-06-02T15:21:52.784Z"
+    },
+    {
+      "_id": "5e0edc02-8ed0-428b-9cb8-bac9b6d009cc",
+      "name": "Calculas",
+      "code": "CU222",
+      "grade": 12,
+      "section": "C",
+      "teacher": "f0346f75-2aed-42df-bfcf-531326185192",
+      "room": "ff78",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-06-02T15:40:14.282Z"
+    },
+    {
+      "_id": "3ba32998-a057-4acc-a890-b9b482060fae",
+      "name": "Nuremical computing",
+      "code": "2023",
+      "grade": 3,
+      "section": "B",
+      "teacher": "10603815-5fd7-4d5d-8223-130a6da15e19",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [],
+      "createdAt": "2026-06-03T05:12:38.411Z"
+    },
+    {
+      "_id": "7669db51-e3cb-4ebe-9852-4e858e881e96",
+      "name": "Maths",
+      "code": "0099",
+      "grade": 3,
+      "section": "B",
+      "teacher": "74d7c5ce-aa5c-4995-a4ef-42962a9d6ff6",
+      "room": "3",
+      "capacity": 20,
+      "academicYear": "2025-2026",
+      "schedule": {
+        "startTime": "08:00",
+        "endTime": "14:00",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ]
+      },
+      "students": [
+        "ac81de9c-08b2-4878-b227-ce8ae4bf061f",
+        "9031ecbf-de2e-433e-9cd6-c60de2bcc174"
+      ],
+      "createdAt": "2026-06-03T05:22:54.925Z"
+    }
+  ],
+  "attendance": [
+    {
+      "_id": "9e9ff307-9372-415d-9454-8d232db56db5",
+      "student": "d2aeb0d3-99eb-476f-ae61-c65bcce0ac3d",
+      "class": "b8bf5248-d409-4153-9a0f-3be589093d4a",
+      "teacher": "f0346f75-2aed-42df-bfcf-531326185192",
+      "date": "2026-05-31T00:00:00.000Z",
+      "status": "present",
+      "subject": "C++",
+      "markedBy": "f0346f75-2aed-42df-bfcf-531326185192",
+      "checkInTime": "2026-05-31T19:50:37.588Z",
+      "createdAt": "2026-05-31T19:50:37.588Z"
+    },
+    {
+      "_id": "c69fbe92-7eba-461c-aa6f-e943f4c7b896",
+      "student": "ac81de9c-08b2-4878-b227-ce8ae4bf061f",
+      "class": "7669db51-e3cb-4ebe-9852-4e858e881e96",
+      "teacher": "74d7c5ce-aa5c-4995-a4ef-42962a9d6ff6",
+      "date": "2026-06-03T00:00:00.000Z",
+      "status": "present",
+      "subject": "Maths",
+      "markedBy": "74d7c5ce-aa5c-4995-a4ef-42962a9d6ff6",
+      "checkInTime": "2026-06-03T05:42:22.416Z",
+      "createdAt": "2026-06-03T05:42:22.416Z"
+    },
+    {
+      "_id": "441a60fb-0e33-4d7e-b5ba-cd6a97804dd6",
+      "student": "9031ecbf-de2e-433e-9cd6-c60de2bcc174",
+      "class": "7669db51-e3cb-4ebe-9852-4e858e881e96",
+      "teacher": "74d7c5ce-aa5c-4995-a4ef-42962a9d6ff6",
+      "date": "2026-06-03T00:00:00.000Z",
+      "status": "present",
+      "subject": "Maths",
+      "markedBy": "74d7c5ce-aa5c-4995-a4ef-42962a9d6ff6",
+      "checkInTime": "2026-06-03T05:42:22.416Z",
+      "createdAt": "2026-06-03T05:42:22.416Z"
+    }
+  ],
+  "marks": [],
+  "notices": [],
+  "feerecords": [
+    {
+      "_id": "FEE-6758043",
+      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
+      "semester": "Semester 3",
+      "type": "Tuition Fee",
+      "amount": 2500,
+      "dueDate": "2026-04-18T12:28:06.523Z",
+      "status": "paid",
+      "description": "Semester tuition fees",
+      "paymentDate": "2026-04-23T12:28:06.523Z",
+      "paymentMethod": "Online Banking",
+      "transactionId": "TXN-128921",
+      "createdAt": "2026-05-18T12:28:06.523Z"
+    },
+    {
+      "_id": "FEE-9167961",
+      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
+      "semester": "Semester 3",
+      "type": "Library Fee",
+      "amount": 150,
+      "dueDate": "2026-04-18T12:28:06.523Z",
+      "status": "paid",
+      "description": "Library access and resources",
+      "paymentDate": "2026-04-23T12:28:06.523Z",
+      "paymentMethod": "Credit Card",
+      "transactionId": "TXN-604901",
+      "createdAt": "2026-05-18T12:28:06.523Z"
+    },
+    {
+      "_id": "FEE-1755486",
+      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
+      "semester": "Semester 3",
+      "type": "Lab Fee",
+      "amount": 350,
+      "dueDate": "2026-05-03T12:28:06.523Z",
+      "status": "paid",
+      "description": "Science lab equipment and materials",
+      "paymentDate": "2026-05-08T12:28:06.523Z",
+      "paymentMethod": "Online Banking",
+      "transactionId": "TXN-758634",
+      "createdAt": "2026-05-18T12:28:06.523Z"
+    },
+    {
+      "_id": "FEE-4989447",
+      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
+      "semester": "Semester 3",
+      "type": "Sports Fee",
+      "amount": 120,
+      "dueDate": "2026-06-02T12:28:06.523Z",
+      "status": "pending",
+      "description": "Sports facilities and annual tournament fee",
+      "createdAt": "2026-05-18T12:28:06.523Z"
+    },
+    {
+      "_id": "FEE-4684750",
+      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
+      "semester": "Semester 3",
+      "type": "Examination Fee",
+      "amount": 300,
+      "dueDate": "2026-07-02T12:28:06.523Z",
+      "status": "pending",
+      "description": "Semester final examination processing fee",
+      "createdAt": "2026-05-18T12:28:06.523Z"
+    },
+    {
+      "_id": "FEE-2622103",
+      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
+      "semester": "Semester 3",
+      "type": "Hostel Fee",
+      "amount": 850,
+      "dueDate": "2026-06-17T12:28:06.523Z",
+      "status": "pending",
+      "description": "Monthly accommodation and maintenance",
+      "createdAt": "2026-05-18T12:28:06.523Z"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+[
+  {
+    "_id": "ATT-001",
+    "studentId": "STU-001",
+    "classId": "CLS-001",
+    "subjectId": "SUB-001",
+    "date": "2026-04-13",
+    "status": "present",
+    "markedBy": "TCH-001",
+    "markedAt": "2026-04-13T15:14:11.811Z",
+    "remarks": "On time",
+    "createdAt": "2026-04-13T15:14:11.811Z",
+    "updatedAt": "2026-04-13T15:14:11.811Z"
+  },
+  {
+    "_id": "ATT-002",
+    "studentId": "STU-001",
+    "classId": "CLS-001",
+    "subjectId": "SUB-002",
+    "date": "2026-04-13",
+    "status": "present",
+    "markedBy": "TCH-001",
+    "markedAt": "2026-04-13T15:14:11.811Z",
+    "remarks": "",
+    "createdAt": "2026-04-13T15:14:11.811Z",
+    "updatedAt": "2026-04-13T15:14:11.811Z"
+  }
+]

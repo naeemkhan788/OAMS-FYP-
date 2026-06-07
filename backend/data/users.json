@@ -1,0 +1,84 @@
+[
+  {
+    "_id": "admin-001",
+    "name": "Admin User",
+    "email": "admin@oams.local",
+    "password": "$2a$10$Tq84lAX2LDk.JAhxCL1XW.hvbXWg4Q8Y9Y66ITeYHL1UMyQpUSWf2",
+    "role": "admin",
+    "isActive": true,
+    "createdAt": "2026-04-12T06:35:20.640Z",
+    "lastLogin": null
+  },
+  {
+    "_id": "teacher-001",
+    "name": "Teacher User",
+    "email": "teacher@oams.local",
+    "password": "$2a$10$NUDlZanQNsD9CPbxAsTc/u2i/SEOOr51xwNP2xtuK2V6J.vJDLqVi",
+    "role": "teacher",
+    "teacherId": "TCH001",
+    "isActive": true,
+    "createdAt": "2026-04-12T06:35:20.979Z",
+    "lastLogin": null
+  },
+  {
+    "_id": "student-001",
+    "name": "Student User",
+    "email": "student@oams.local",
+    "password": "$2a$10$jdWKLiw6RbrYrwGBD3AaDONOWSx1dbTTa49V9eKvPOxpyLcb5r6z.",
+    "role": "student",
+    "studentId": "STU001",
+    "isActive": true,
+    "createdAt": "2026-04-12T06:35:21.295Z",
+    "lastLogin": null
+  },
+  {
+    "_id": "user-1775975766262",
+    "name": "Atif Khan ali",
+    "email": "khan12@gmail.com",
+    "password": "$2a$10$ArFTsTeTZ9EX8thX1AHoJOUNPBHxi.RUBKcXflqZoZxJQlR8kIv5a",
+    "role": "student",
+    "isActive": true,
+    "createdAt": "2026-04-12T06:36:06.465Z",
+    "lastLogin": null
+  },
+  {
+    "_id": "user-1775975880618",
+    "name": "munsif khan",
+    "email": "munsifkhan12@gmail.com",
+    "password": "$2a$10$F.iI4s6hDK/C0FKYprYoj.AgetQ1mRacQzZuT8R9/vdr9hsz3hlh6",
+    "role": "student",
+    "isActive": true,
+    "createdAt": "2026-04-12T06:38:01.000Z",
+    "lastLogin": "2026-04-12T06:39:30.201Z"
+  },
+  {
+    "_id": "user-1775977059529",
+    "name": "munsif Ali",
+    "email": "munsifali12@gmail.com",
+    "password": "$2a$10$MD4NMbN1vMVOx4XCHqJxa.CliUNke6AGJOJ.Pwzvdp2Dp/g4B.XWm",
+    "role": "student",
+    "isActive": true,
+    "createdAt": "2026-04-12T06:57:39.742Z",
+    "lastLogin": "2026-04-13T15:00:57.556Z"
+  },
+  {
+    "_id": "user-1775978000772",
+    "name": "munsif Ali",
+    "email": "munsifali14@gmail.com",
+    "password": "$2a$10$CKmL91hNQLC1mtlFuj5yb.a8a5bsxzHAovg5jxomSO.e8wDgM7DvW",
+    "role": "student",
+    "isActive": true,
+    "createdAt": "2026-04-12T07:13:21.102Z",
+    "lastLogin": null
+  },
+  {
+    "_id": "user-1776092600736",
+    "name": "Teacher Khan",
+    "email": "teacher@gnail.com",
+    "password": "$2a$10$5Luv/9CohPAItFxMX8d7C.Q0baVgcTrwQ88E3yA8anaSz3MtdaRIa",
+    "role": "teacher",
+    "isActive": true,
+    "createdAt": "2026-04-13T15:03:20.926Z",
+    "lastLogin": "2026-04-13T15:05:31.285Z"
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "TT-001",
+    "classId": "CLS-001",
+    "subjectId": "SUB-001",
+    "teacherId": "TCH-001",
+    "day": "Monday",
+    "startTime": "08:30",
+    "endTime": "10:00",
+    "roomNumber": "CS-Lab-1",
+    "isLab": false,
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.828Z",
+    "updatedAt": "2026-04-13T15:14:11.828Z"
+  },
+  {
+    "_id": "TT-002",
+    "classId": "CLS-001",
+    "subjectId": "SUB-002",
+    "teacherId": "TCH-001",
+    "day": "Monday",
+    "startTime": "10:00",
+    "endTime": "11:30",
+    "roomNumber": "CS-Lab-2",
+    "isLab": true,
+    "isActive": true,
+    "createdAt": "2026-04-13T15:14:11.828Z",
+    "updatedAt": "2026-04-13T15:14:11.828Z"
+  }
+]
