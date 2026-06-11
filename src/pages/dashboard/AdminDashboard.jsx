@@ -89,6 +89,12 @@ export default function AdminDashboard() {
     setNotifications(prev => [newNotification, ...prev].slice(0, 50)); // Keep last 50
   };
 
+  // Get available roles based on current role (exclude current role from dropdown)
+  const getAvailableRoles = (currentRole) => {
+    const allRoles = ['student', 'teacher', 'admin'];
+    return allRoles.filter(role => role !== currentRole);
+  };
+
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
@@ -1704,16 +1710,27 @@ export default function AdminDashboard() {
                   onChange={(e) => setUserForm({...userForm, email: e.target.value})}
                   required
                 />
-                <select 
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  value={userForm.role}
-                  onChange={(e) => setUserForm({...userForm, role: e.target.value})}
-                  required
-                >
-                  <option value="student">Student</option>
-                  <option value="teacher">Teacher</option>
-                  <option value="admin">Admin</option>
-                </select>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">User Role</label>
+                  <div className="bg-gray-50 rounded-lg p-2 mb-2 border border-gray-200">
+                    <p className="text-sm text-gray-600">Current Role: <span className="font-semibold text-primary-900">{editingUser?.role ? editingUser.role.charAt(0).toUpperCase() + editingUser.role.slice(1) : 'N/A'}</span></p>
+                  </div>
+                  <select 
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={userForm.role}
+                    onChange={(e) => setUserForm({...userForm, role: e.target.value})}
+                    required
+                  >
+                    <option value="">-- Select New Role --</option>
+                    {editingUser && getAvailableRoles(editingUser.role).map(role => (
+                      <option key={role} value={role}>
+                        {role === 'student' ? '🎓 ' : role === 'teacher' ? '👨‍🏫 ' : '🔐 '}
+                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Select a role different from the current role</p>
+                </div>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700">
                   <p><strong>Note:</strong> Password cannot be changed here. Use the password reset feature.</p>
                 </div>

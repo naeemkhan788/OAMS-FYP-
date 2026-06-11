@@ -59,6 +59,23 @@ const updateUser = async (req, res) => {
     delete updateData.password;
     if (updateData.role && req.user.role !== 'admin') delete updateData.role;
 
+    // Validate role change: prevent changing to the same role
+    if (updateData.role) {
+      let currentUser;
+      if (isJsonDB()) {
+        currentUser = global.jsonDB.users.find(u => u._id === userId);
+      } else {
+        currentUser = await User.findById(userId).select('role');
+      }
+      
+      if (currentUser && updateData.role === currentUser.role) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `User is already a ${currentUser.role}. Please select a different role.` 
+        });
+      }
+    }
+
     if (isJsonDB()) {
       const userIndex = global.jsonDB.users.findIndex(u => u._id === userId);
       if (userIndex === -1) {

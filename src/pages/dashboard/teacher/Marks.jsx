@@ -96,6 +96,8 @@ export default function Marks() {
       const assessments = [
         { type: 'quiz', marks: parseInt(studentMarks.quiz) || 0, max: 5, title: `${subject} Quiz` },
         { type: 'assignment', marks: parseInt(studentMarks.assignment) || 0, max: 5, title: `${subject} Assignment` },
+        { type: 'presentation', marks: parseInt(studentMarks.presentation) || 0, max: 5, title: `${subject} Presentation` },
+        { type: 'paper', marks: parseInt(studentMarks.paper) || 0, max: 20, title: `${subject} Paper` },
       ];
 
       for (const assess of assessments) {

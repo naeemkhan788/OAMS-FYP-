@@ -22,7 +22,7 @@ const marksSchema = new mongoose.Schema({
   },
   assessmentType: {
     type: String,
-    enum: ['quiz', 'assignment', 'midterm', 'final', 'practical', 'project'],
+    enum: ['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'],
     required: [true, 'Assessment type is required']
   },
   title: {
