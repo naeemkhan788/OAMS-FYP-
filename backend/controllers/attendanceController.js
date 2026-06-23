@@ -744,11 +744,192 @@ const markBulkAttendance = async (req, res) => {
   }
 };
 
+const saveAttendanceSingleOrBatch = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+    let records = [];
+
+    if (Array.isArray(req.body)) {
+      records = req.body;
+    } else if (req.body.attendanceData && Array.isArray(req.body.attendanceData)) {
+      const { classId, date, subject, attendanceData } = req.body;
+      const timestamp = date ? new Date(date).getTime() : Date.now();
+      records = attendanceData.map(item => ({
+        uniqueId: item.uniqueId || `${classId}_${item.studentId}_${new Date(timestamp).toISOString().split('T')[0]}`,
+        studentId: item.studentId,
+        classId: classId,
+        status: item.status,
+        timestamp: timestamp,
+        notes: item.notes
+      }));
+    } else if (req.body && typeof req.body === 'object') {
+      records = [req.body];
+    }
+
+    if (records.length === 0) {
+      return res.status(400).json({ success: false, message: 'No attendance records provided' });
+    }
+
+    const results = [];
+    const errors = [];
+    const duplicates = [];
+
+    const processRecord = async (record) => {
+      const { uniqueId, studentId, classId, status, timestamp, notes } = record;
+
+      if (!studentId || !classId || !status) {
+        throw new Error('studentId, classId, and status are required');
+      }
+
+      const attendanceDate = timestamp ? new Date(timestamp) : new Date();
+
+      let classDoc;
+      if (isJsonDB()) {
+        classDoc = global.jsonDB.classes.find(c => c._id === classId);
+      } else {
+        classDoc = await Class.findById(classId);
+      }
+
+      if (!classDoc) {
+        throw new Error(`Class ${classId} not found`);
+      }
+
+      const subject = classDoc.subjects?.[0]?.name || classDoc.name || 'General';
+
+      // Check for duplicate by uniqueId first (offline sync prevention)
+      if (uniqueId) {
+        let existing;
+        if (isJsonDB()) {
+          existing = global.jsonDB.attendance.find(a => a.uniqueId === uniqueId);
+        } else {
+          existing = await Attendance.findOne({ uniqueId });
+        }
+
+        if (existing) {
+          console.log(`Duplicate detected by uniqueId: ${uniqueId}, skipping`);
+          duplicates.push({ uniqueId, existingId: existing._id || existing.id });
+          return { duplicate: true, uniqueId, existingId: existing._id || existing.id };
+        }
+      }
+
+      // Check for duplicate by student, class, and date (business logic duplicate)
+      let existingByDate;
+      if (isJsonDB()) {
+        existingByDate = global.jsonDB.attendance.find(a =>
+          a.student === studentId &&
+          a.class === classId &&
+          new Date(a.date) >= startOfDay(attendanceDate) &&
+          new Date(a.date) <= endOfDay(attendanceDate)
+        );
+      } else {
+        existingByDate = await Attendance.findOne({
+          student: studentId,
+          class: classId,
+          date: {
+            $gte: startOfDay(attendanceDate),
+            $lte: endOfDay(attendanceDate)
+          }
+        });
+      }
+
+      if (existingByDate) {
+        // Update existing record instead of creating duplicate
+        if (isJsonDB()) {
+          existingByDate.status = status;
+          if (uniqueId) existingByDate.uniqueId = uniqueId;
+          existingByDate.notes = notes || existingByDate.notes;
+          existingByDate.subject = subject;
+          existingByDate.markedBy = teacherId;
+          global.jsonDB.save();
+        } else {
+          existingByDate.status = status;
+          if (uniqueId) existingByDate.uniqueId = uniqueId;
+          existingByDate.notes = notes || existingByDate.notes;
+          existingByDate.subject = subject;
+          existingByDate.markedBy = teacherId;
+          await existingByDate.save();
+        }
+        console.log(`Updated existing attendance for student ${studentId} in class ${classId} on ${attendanceDate.toISOString().split('T')[0]}`);
+        return existingByDate;
+      }
+
+      // Create new record
+      if (isJsonDB()) {
+        const newRecord = {
+          _id: uuidv4(),
+          student: studentId,
+          class: classId,
+          teacher: teacherId,
+          date: attendanceDate,
+          status,
+          subject,
+          markedBy: teacherId,
+          uniqueId,
+          checkInTime: status === 'present' ? new Date() : null,
+          createdAt: new Date()
+        };
+        global.jsonDB.attendance.push(newRecord);
+        global.jsonDB.save();
+        console.log(`Created new attendance record with uniqueId: ${uniqueId}`);
+        return newRecord;
+      } else {
+        const newRecord = await Attendance.create({
+          student: studentId,
+          class: classId,
+          teacher: teacherId,
+          date: attendanceDate,
+          status,
+          subject,
+          markedBy: teacherId,
+          uniqueId,
+          checkInTime: status === 'present' ? new Date() : null
+        });
+        console.log(`Created new attendance record with uniqueId: ${uniqueId}`);
+        return newRecord;
+      }
+    };
+
+    for (const record of records) {
+      try {
+        const result = await processRecord(record);
+        if (!result.duplicate) {
+          results.push(result);
+        }
+      } catch (err) {
+        errors.push({ record, error: err.message });
+      }
+    }
+
+    if (errors.length > 0 && results.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Failed to process attendance records',
+        errors
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Processed ${results.length} records successfully. ${duplicates.length} duplicates skipped. ${errors.length} errors.`,
+      data: results,
+      duplicates: duplicates.length > 0 ? duplicates : undefined,
+      errors: errors.length > 0 ? errors : undefined
+    });
+  } catch (error) {
+    console.error('Save attendance error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while saving attendance'
+    });
+  }
+};
+
 module.exports = {
   markAttendance,
   getAttendanceByClass,
   getStudentAttendance,
   getAttendanceReport,
   getTeacherAttendance,
-  markBulkAttendance
+  markBulkAttendance,
+  saveAttendanceSingleOrBatch
 };

@@ -7,7 +7,8 @@ const {
   getStudentAttendance,
   getAttendanceReport,
   getTeacherAttendance,
-  markBulkAttendance
+  markBulkAttendance,
+  saveAttendanceSingleOrBatch
 } = require('../controllers/attendanceController');
 
 const router = express.Router();
@@ -69,6 +70,7 @@ const getReportValidation = [
     .withMessage('Please provide a valid end date')
 ];
 
+router.post('/', protect, authorize('teacher', 'admin'), saveAttendanceSingleOrBatch);
 router.post('/mark', protect, authorize('teacher', 'admin'), markAttendanceValidation, markAttendance);
 router.post('/bulk', protect, authorize('teacher', 'admin'), markBulkAttendance);
 router.get('/class', protect, authorize('teacher', 'admin'), getAttendanceValidation, getAttendanceByClass);

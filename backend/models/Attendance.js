@@ -54,6 +54,11 @@ const attendanceSchema = new mongoose.Schema({
     type: Number,
     min: 0
   },
+  uniqueId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

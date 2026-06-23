@@ -18,6 +18,7 @@ const userRoutes = require('./routes/users');
 const tableRoutes = require('./routes/tables');
 const noticeRoutes = require('./routes/notices');
 const feeRoutes = require('./routes/fees');
+const syncRoutes = require('./routes/sync');
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/fees', feeRoutes);
+app.use('/api/sync', syncRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({

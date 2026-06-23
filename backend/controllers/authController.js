@@ -117,14 +117,14 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  console.log('=== LOGIN REQUEST ===');
-  console.log('Request body:', req.body);
-  console.log('isJsonDB():', isJsonDB());
+  console.log('[LOGIN] Attempt:', { email: req.body?.email });
+  console.log('[LOGIN] DB Mode:', isJsonDB() ? 'JSON DB' : 'MongoDB');
 
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const errorMessages = errors.array().map(err => err.msg).join(', ');
+      console.log('[LOGIN] Validation failed:', errorMessages);
       return res.status(400).json({
         success: false,
         message: `Validation failed: ${errorMessages}`,
@@ -136,17 +136,25 @@ const login = async (req, res) => {
 
     // JSON DB Mode
     if (isJsonDB()) {
+      console.log('[LOGIN] Using JSON DB mode');
+      console.log('[LOGIN] Available users:', global.jsonDB.users.map(u => ({ email: u.email, id: u._id })));
+      
       const user = global.jsonDB.users.find(u => u.email === email);
       if (!user) {
+        console.log('[LOGIN] User not found:', email);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
         });
       }
 
+      console.log('[LOGIN] User found in JSON DB:', user._id);
       const bcrypt = require('bcryptjs');
       const isMatch = await bcrypt.compare(password, user.password);
+      console.log('[LOGIN] Password comparison result:', isMatch);
+      
       if (!isMatch) {
+        console.log('[LOGIN] Password mismatch (JSON DB):', email);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
@@ -158,6 +166,7 @@ const login = async (req, res) => {
       global.jsonDB.save();
 
       const token = generateToken(user._id);
+      console.log('[LOGIN] Success (JSON DB):', email);
 
       return res.status(200).json({
         success: true,
@@ -173,16 +182,25 @@ const login = async (req, res) => {
     }
 
     // MongoDB Mode
+    console.log('[LOGIN] Using MongoDB mode');
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      console.log('[LOGIN] User not found:', email);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    console.log('[LOGIN] User found in MongoDB:', user._id);
+
+    // Use bcrypt.compare directly for reliability
+    const bcrypt = require('bcryptjs');
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log('[LOGIN] Password comparison result:', isMatch);
+    
     if (!isMatch) {
+      console.log('[LOGIN] Password mismatch (MongoDB):', email);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -194,6 +212,7 @@ const login = async (req, res) => {
     await user.save();
 
     const token = generateToken(user._id);
+    console.log('[LOGIN] Success (MongoDB):', email);
 
     res.status(200).json({
       success: true,
@@ -207,7 +226,7 @@ const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('[LOGIN] Error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Login failed'
