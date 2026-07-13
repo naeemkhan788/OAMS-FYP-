@@ -161,6 +161,23 @@ const login = async (req, res) => {
         });
       }
 
+      // Check account status for teachers in JSON DB mode
+      if (user.role === 'teacher' && user.status === 'pending') {
+        console.log('[LOGIN] Teacher account pending approval (JSON DB):', email);
+        return res.status(403).json({
+          success: false,
+          message: 'Your account is awaiting admin approval.'
+        });
+      }
+
+      if (user.status === 'rejected') {
+        console.log('[LOGIN] Account rejected (JSON DB):', email);
+        return res.status(403).json({
+          success: false,
+          message: 'Your registration request has been rejected. Contact the administrator.'
+        });
+      }
+
       // Update last login
       user.lastLogin = new Date().toISOString();
       global.jsonDB.save();
@@ -198,12 +215,29 @@ const login = async (req, res) => {
     const bcrypt = require('bcryptjs');
     const isMatch = await bcrypt.compare(password, user.password);
     console.log('[LOGIN] Password comparison result:', isMatch);
-    
+
     if (!isMatch) {
       console.log('[LOGIN] Password mismatch (MongoDB):', email);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
+      });
+    }
+
+    // Check account status for teachers
+    if (user.role === 'teacher' && user.status === 'pending') {
+      console.log('[LOGIN] Teacher account pending approval:', email);
+      return res.status(403).json({
+        success: false,
+        message: 'Your account is awaiting admin approval.'
+      });
+    }
+
+    if (user.status === 'rejected') {
+      console.log('[LOGIN] Account rejected:', email);
+      return res.status(403).json({
+        success: false,
+        message: 'Your registration request has been rejected. Contact the administrator.'
       });
     }
 

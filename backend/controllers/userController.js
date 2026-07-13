@@ -153,4 +153,65 @@ const getUnassignedStudents = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getUserById, updateUser, deleteUser, getUnassignedStudents };
+const getPendingTeachers = async (req, res) => {
+  try {
+    if (isJsonDB()) {
+      const pendingTeachers = global.jsonDB.users
+        .filter(u => u.role === 'teacher' && u.status === 'pending')
+        .map(({ password, ...user }) => user);
+      return res.status(200).json({ success: true, data: { teachers: pendingTeachers } });
+    }
+
+    const pendingTeachers = await User.find({
+      role: 'teacher',
+      status: 'pending'
+    }).select('-password');
+    res.status(200).json({ success: true, data: { teachers: pendingTeachers } });
+  } catch (error) {
+    console.error('Get pending teachers error:', error);
+    res.status(500).json({ success: false, message: 'Server error while fetching pending teachers' });
+  }
+};
+
+const approveRejectTeacher = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status. Must be approved or rejected' });
+    }
+
+    if (isJsonDB()) {
+      const userIndex = global.jsonDB.users.findIndex(u => u._id === id);
+      if (userIndex === -1) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      if (global.jsonDB.users[userIndex].role !== 'teacher') {
+        return res.status(400).json({ success: false, message: 'User is not a teacher' });
+      }
+      global.jsonDB.users[userIndex].status = status;
+      global.jsonDB.save();
+      const { password, ...userWithoutPassword } = global.jsonDB.users[userIndex];
+      return res.status(200).json({ success: true, message: `Teacher ${status} successfully`, data: { user: userWithoutPassword } });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (user.role !== 'teacher') {
+      return res.status(400).json({ success: false, message: 'User is not a teacher' });
+    }
+    user.status = status;
+    await user.save();
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+    res.status(200).json({ success: true, message: `Teacher ${status} successfully`, data: { user: userWithoutPassword } });
+  } catch (error) {
+    console.error('Approve/reject teacher error:', error);
+    res.status(500).json({ success: false, message: 'Server error while updating teacher status' });
+  }
+};
+
+module.exports = { getUsers, getUserById, updateUser, deleteUser, getUnassignedStudents, getPendingTeachers, approveRejectTeacher };

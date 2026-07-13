@@ -1,7 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const { protect, authorize } = require('../middleware/auth');
-const { getUsers, getUserById, updateUser, deleteUser, getUnassignedStudents } = require('../controllers/userController');
+const { getUsers, getUserById, updateUser, deleteUser, getUnassignedStudents, getPendingTeachers, approveRejectTeacher } = require('../controllers/userController');
 
 const router = express.Router();
 
@@ -13,10 +13,16 @@ const userValidation = [
   body('teacherId').optional().notEmpty().withMessage('Teacher ID cannot be empty')
 ];
 
+const statusValidation = [
+  body('status').isIn(['approved', 'rejected']).withMessage('Status must be approved or rejected')
+];
+
 router.get('/', protect, authorize('admin'), getUsers);
+router.get('/pending-teachers', protect, authorize('admin'), getPendingTeachers);
 router.get('/unassigned-students', protect, authorize('teacher', 'admin'), getUnassignedStudents);
 router.get('/:id', protect, authorize('admin', 'teacher', 'student'), getUserById);
 router.put('/:id', protect, authorize('admin', 'teacher', 'student'), userValidation, updateUser);
+router.put('/:id/status', protect, authorize('admin'), statusValidation, approveRejectTeacher);
 router.delete('/:id', protect, authorize('admin'), deleteUser);
 
 module.exports = router;

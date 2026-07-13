@@ -690,9 +690,15 @@ const getMarksReport = async (req, res) => {
 
 const getTeacherMarks = async (req, res) => {
   try {
+    console.log('[getTeacherMarks] Teacher ID:', req.user.id);
+    console.log('[getTeacherMarks] User Role:', req.user.role);
+    
     if (isJsonDB()) {
-      const marks = global.jsonDB.marks
-        .filter(m => m.teacher === req.user.id)
+      console.log('[getTeacherMarks] Using JSON DB mode');
+      console.log('[getTeacherMarks] Total marks records:', global.jsonDB.marks.length);
+      const teacherMarks = global.jsonDB.marks.filter(m => m.teacher === req.user.id);
+      console.log('[getTeacherMarks] Marks for this teacher:', teacherMarks.length);
+      const marks = teacherMarks
         .map(m => ({
           ...m,
           student: global.jsonDB.users.find(u => u._id === m.student),
@@ -700,13 +706,16 @@ const getTeacherMarks = async (req, res) => {
         }))
         .filter(m => m.student && m.class)
         .sort((a, b) => new Date(b.assessmentDate) - new Date(a.assessmentDate));
-
+      console.log('[getTeacherMarks] Marks with populated data:', marks.length);
       return res.status(200).json({ success: true, data: { marks } });
     }
+    
+    console.log('[getTeacherMarks] Using MongoDB mode');
     const marks = await Marks.find({ teacher: req.user.id })
       .populate('student', 'name studentId')
       .populate('class', 'name code')
       .sort({ assessmentDate: -1 });
+    console.log('[getTeacherMarks] Marks records found:', marks.length);
     res.status(200).json({ success: true, data: { marks } });
   } catch (error) {
     console.error('Get teacher marks error:', error);

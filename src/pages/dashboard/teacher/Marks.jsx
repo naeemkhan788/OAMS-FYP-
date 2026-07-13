@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import offlineService from '../../../services/offlineService';
 
 const API_BASE = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}`;
 const authHeaders = () => {
@@ -15,19 +16,54 @@ export default function Marks() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [syncStatus, setSyncStatus] = useState({ status: '', count: 0 });
+
+  // Network status listeners
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Subscribe to sync status changes
+    const unsubscribe = offlineService.onSyncStatusChange((statusInfo) => {
+      setSyncStatus(statusInfo);
+    });
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      unsubscribe();
+    };
+  }, []);
 
   // Fetch teacher's classes on mount
   useEffect(() => {
     const fetchClasses = async () => {
       try {
         setLoading(true);
-        // Fetch classes assigned to this teacher
+        if (!isOnline) {
+          const cachedClasses = await offlineService.getOfflineData('teacher_classes');
+          if (cachedClasses && cachedClasses.data) {
+            setClasses(cachedClasses.data);
+            if (cachedClasses.data.length > 0) {
+              setSelectedClass(cachedClasses.data[0]._id);
+            }
+          } else {
+            setError('No internet connection and no cached class lists found.');
+          }
+          return;
+        }
+
         const res = await fetch(`${API_BASE}/classes/teacher/my-classes`, { headers: authHeaders() });
         const data = await res.json();
         console.log('Classes API response:', data);
         if (data.success && data.data) {
           const classList = data.data.classes || data.data || [];
           setClasses(classList);
+          await offlineService.saveOfflineData('teacher_classes', classList);
           if (classList.length > 0) {
             setSelectedClass(classList[0]._id);
           }
@@ -42,19 +78,30 @@ export default function Marks() {
       }
     };
     fetchClasses();
-  }, []);
+  }, [isOnline]);
 
   // Fetch students when class changes
   useEffect(() => {
     if (!selectedClass) return;
     const fetchStudents = async () => {
       try {
+        if (!isOnline) {
+          const cachedStudents = await offlineService.getOfflineData(`class_students_${selectedClass}`);
+          if (cachedStudents && cachedStudents.data) {
+            setStudents(cachedStudents.data);
+          } else {
+            setStudents([]);
+          }
+          return;
+        }
+
         const res = await fetch(`${API_BASE}/classes/${selectedClass}/students`, { headers: authHeaders() });
         const data = await res.json();
         console.log('Students API response:', data);
         if (data.success && data.data) {
           const studentsList = data.data.students || data.data || [];
           setStudents(studentsList);
+          await offlineService.saveOfflineData(`class_students_${selectedClass}`, studentsList);
         } else {
           console.error('Failed to fetch students:', data.message);
           setStudents([]);
@@ -67,7 +114,7 @@ export default function Marks() {
     fetchStudents();
     setSelectedStudent('');
     setStudentMarks({ quiz: '', assignment: '', presentation: '', paper: '' });
-  }, [selectedClass]);
+  }, [selectedClass, isOnline]);
 
   const handleStudentSelect = (studentId) => {
     setSelectedStudent(studentId);
@@ -90,6 +137,53 @@ export default function Marks() {
     const classInfo = classes.find(c => c._id === selectedClass);
     const subject = classInfo?.subjects?.[0]?.name || classInfo?.name || 'General';
 
+    // Check if offline
+    if (!isOnline) {
+      try {
+        setSaving(true);
+        // Save each assessment type as a mark entry offline
+        const assessments = [
+          { type: 'quiz', marks: parseInt(studentMarks.quiz) || 0, max: 5, title: `${subject} Quiz` },
+          { type: 'assignment', marks: parseInt(studentMarks.assignment) || 0, max: 5, title: `${subject} Assignment` },
+          { type: 'presentation', marks: parseInt(studentMarks.presentation) || 0, max: 5, title: `${subject} Presentation` },
+          { type: 'paper', marks: parseInt(studentMarks.paper) || 0, max: 20, title: `${subject} Paper` },
+        ];
+
+        let savedCount = 0;
+        for (const assess of assessments) {
+          if (assess.marks > 0) {
+            const uniqueId = `${selectedClass}_${selectedStudent}_${assess.type}_${Date.now()}`;
+            const record = {
+              uniqueId,
+              classId: selectedClass,
+              studentId: selectedStudent,
+              subject,
+              assessmentType: assess.type,
+              title: assess.title,
+              marksObtained: assess.marks,
+              maxMarks: assess.max,
+              remarks: '',
+              timestamp: Date.now()
+            };
+            await offlineService.saveOfflineMarks(record);
+            savedCount++;
+          }
+        }
+
+        if (savedCount > 0) {
+          alert(`💾 Saved ${savedCount} marks record(s) offline! They will sync automatically when you're back online.`);
+        } else {
+          alert('No marks to save. Please enter marks for at least one assessment.');
+        }
+      } catch (err) {
+        alert(`Error saving offline: ${err.message}`);
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
+    // Online mode - save directly to backend
     try {
       setSaving(true);
       // Save each assessment type as a mark entry
@@ -173,8 +267,62 @@ export default function Marks() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-primary-900">Marks Management</h1>
-        <p className="text-gray-600">Upload and manage student assessment marks (Live Data)</p>
+        <p className="text-gray-600">Upload and manage student assessment marks ({isOnline ? 'Live Mode' : 'Offline Cache'})</p>
       </div>
+
+      {/* Network & Sync Status Header Banner */}
+      {!isOnline && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl flex items-center justify-between shadow-sm animate-pulse">
+          <div className="flex items-center space-x-3">
+            <span className="text-amber-500 text-lg">⚠️</span>
+            <div>
+              <p className="text-sm font-semibold text-amber-800">You are currently offline</p>
+              <p className="text-xs text-amber-700">Marks will be saved locally and synced automatically when you reconnect.</p>
+            </div>
+          </div>
+          <span className="px-3 py-1 bg-amber-200 text-amber-800 rounded-full text-xs font-bold uppercase tracking-wider">
+            Offline Mode
+          </span>
+        </div>
+      )}
+
+      {syncStatus.status && (
+        <div className={`p-4 rounded-xl border flex items-center justify-between shadow-sm transition-all duration-300 ${
+          syncStatus.status === 'syncing' ? 'bg-blue-50 border-blue-200 text-blue-800' :
+          syncStatus.status === 'completed' ? 'bg-green-50 border-green-200 text-green-800' :
+          syncStatus.status === 'failed' ? 'bg-red-50 border-red-200 text-red-800' :
+          syncStatus.status === 'partial' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
+          syncStatus.status === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-800'
+        }`}>
+          <div className="flex items-center space-x-3">
+            <span className="text-lg">
+              {syncStatus.status === 'syncing' ? '🔄' :
+               syncStatus.status === 'completed' ? '✅' :
+               syncStatus.status === 'failed' ? '❌' :
+               syncStatus.status === 'partial' ? '⚠️' : '⏳'}
+            </span>
+            <div>
+              <p className="text-sm font-semibold">
+                {syncStatus.status === 'syncing' ? 'Syncing local marks data...' :
+                 syncStatus.status === 'completed' ? 'All local marks data synced!' :
+                 syncStatus.status === 'failed' ? `Sync failed: ${syncStatus.error}` :
+                 syncStatus.status === 'partial' ? `Partial sync: ${syncStatus.success} synced, ${syncStatus.failed} failed` :
+                 syncStatus.status === 'pending' ? 'Offline marks records queued' : 'Local storage status'}
+              </p>
+              <p className="text-xs opacity-90">
+                {syncStatus.status === 'syncing' ? `Uploading ${syncStatus.count} records...` :
+                 syncStatus.status === 'completed' ? `Successfully synced ${syncStatus.count} records.` :
+                 syncStatus.status === 'failed' ? 'Will retry when connection stabilizes.' :
+                 syncStatus.status === 'partial' ? 'Failed records will retry automatically.' :
+                 syncStatus.status === 'pending' ? `${syncStatus.count} unsynced record(s) waiting to sync.` : ''}
+              </p>
+            </div>
+          </div>
+          {syncStatus.status === 'syncing' && (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+          )}
+        </div>
+      )}
 
       {/* Controls */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

@@ -8,6 +8,8 @@ require('../models/Class');
 require('../models/Attendance');
 require('../models/Marks');
 require('../models/Notice');
+require('../models/Report');
+require('../models/Leave');
 
 const startLocalMongod = async () => {
   try {
@@ -61,7 +63,9 @@ const connectDB = async () => {
       classes: [],
       attendance: [],
       marks: [],
-      notices: []
+      notices: [],
+      reports: [],
+      leaves: []
     };
 
     const dbPath = path.join(dataDir, 'oams.json');
@@ -70,6 +74,8 @@ const connectDB = async () => {
       const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
       Object.assign(jsonDB, data);
       if (!jsonDB.notices) jsonDB.notices = [];
+      if (!jsonDB.reports) jsonDB.reports = [];
+      if (!jsonDB.leaves) jsonDB.leaves = [];
     }
 
     jsonDB.save = () => {

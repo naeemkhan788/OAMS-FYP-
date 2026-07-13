@@ -27,6 +27,14 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Role is required'],
     default: 'student'
   },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: function() {
+      // Teachers default to pending, students and admins default to approved
+      return this.role === 'teacher' ? 'pending' : 'approved';
+    }
+  },
   studentId: {
     type: String,
     unique: true,

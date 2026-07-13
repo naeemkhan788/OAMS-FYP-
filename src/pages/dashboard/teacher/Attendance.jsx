@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import useNetworkStatus from '../../../hooks/useNetworkStatus';
+import offlineService from '../../../services/offlineService';
 
 const API_BASE = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}`;
 const authHeaders = () => {
@@ -7,6 +9,8 @@ const authHeaders = () => {
 };
 
 export default function Attendance() {
+  const { isOnline } = useNetworkStatus();
+  const [syncStatus, setSyncStatus] = useState({ status: '', count: 0 });
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
@@ -18,17 +22,57 @@ export default function Attendance() {
   const [error, setError] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Subscribe to attendance sync updates
+  useEffect(() => {
+    const unsubscribe = offlineService.onSyncStatusChange((statusInfo) => {
+      setSyncStatus(statusInfo);
+      if (statusInfo.status === 'completed') {
+        setRefreshTrigger(prev => prev + 1);
+      }
+    });
+
+    const checkQueue = async () => {
+      try {
+        const unsynced = await offlineService.getUnsyncedAttendance();
+        if (unsynced.length > 0) {
+          setSyncStatus({ status: 'pending', count: unsynced.length });
+        }
+      } catch (err) {
+        console.error('Failed to check offline attendance queue:', err);
+      }
+    };
+    checkQueue();
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   // Fetch teacher's classes on mount
   useEffect(() => {
     const fetchClasses = async () => {
       try {
         setLoading(true);
+        if (!isOnline) {
+          const cachedClasses = await offlineService.getOfflineData('teacher_classes');
+          if (cachedClasses && cachedClasses.data) {
+            setClasses(cachedClasses.data);
+            if (cachedClasses.data.length > 0) {
+              setSelectedClass(cachedClasses.data[0]._id);
+            }
+          } else {
+            setError('No internet connection and no cached class lists found.');
+          }
+          return;
+        }
+
         const res = await fetch(`${API_BASE}/classes/teacher/my-classes`, { headers: authHeaders() });
         const data = await res.json();
         console.log('Classes API response:', data);
         if (data.success && data.data) {
           const classList = data.data.classes || data.data || [];
           setClasses(classList);
+          await offlineService.saveOfflineData('teacher_classes', classList);
           if (classList.length > 0) {
             setSelectedClass(classList[0]._id);
           }
@@ -43,19 +87,30 @@ export default function Attendance() {
       }
     };
     fetchClasses();
-  }, []);
+  }, [isOnline]);
 
   // Fetch students when class changes
   useEffect(() => {
     if (!selectedClass) return;
     const fetchStudents = async () => {
       try {
+        if (!isOnline) {
+          const cachedStudents = await offlineService.getOfflineData(`class_students_${selectedClass}`);
+          if (cachedStudents && cachedStudents.data) {
+            setStudents(cachedStudents.data);
+          } else {
+            setStudents([]);
+          }
+          return;
+        }
+
         const res = await fetch(`${API_BASE}/classes/${selectedClass}/students`, { headers: authHeaders() });
         const data = await res.json();
         console.log('Students API response:', data);
         if (data.success && data.data) {
           const studentsList = data.data.students || data.data || [];
           setStudents(studentsList);
+          await offlineService.saveOfflineData(`class_students_${selectedClass}`, studentsList);
         } else {
           console.error('Failed to fetch students:', data.message);
           setStudents([]);
@@ -66,20 +121,54 @@ export default function Attendance() {
       }
     };
     fetchStudents();
-  }, [selectedClass]);
+  }, [selectedClass, isOnline]);
 
   // Fetch attendance history
   useEffect(() => {
     if (!selectedClass) return;
     const fetchHistory = async () => {
       try {
+        if (!isOnline) {
+          const cachedHistory = await offlineService.getOfflineData(`attendance_history_${selectedClass}_${selectedDate}`);
+          if (cachedHistory && cachedHistory.data) {
+            const data = cachedHistory.data;
+            const studentsWithAttendance = data.students || [];
+            const hasSavedRecords = data.stats && data.stats.total > 0;
+
+            const existing = {};
+            studentsWithAttendance.forEach(item => {
+              const studentId = item.student?._id || item.student?.id || (typeof item.student === 'string' ? item.student : null);
+              if (studentId) {
+                existing[studentId] = item.attendance?.status || 'present';
+              }
+            });
+            setAttendance(existing);
+
+            if (hasSavedRecords) {
+              const classInfo = classes.find(c => c._id === selectedClass);
+              setAttendanceHistory([{
+                date: selectedDate,
+                class: classInfo?.code || classInfo?.name || 'Class',
+                present: data.stats.present,
+                absent: data.stats.absent,
+                percentage: data.stats.percentage
+              }]);
+            } else {
+              setAttendanceHistory([]);
+            }
+          } else {
+            setAttendance({});
+            setAttendanceHistory([]);
+          }
+          return;
+        }
+
         const res = await fetch(`${API_BASE}/attendance/class?classId=${selectedClass}&date=${selectedDate}`, { headers: authHeaders() });
         const data = await res.json();
         if (data.success && data.data) {
           const studentsWithAttendance = data.data.students || [];
           const hasSavedRecords = data.data.stats && data.data.stats.total > 0;
 
-          // Pre-fill attendance state from existing records
           const existing = {};
           studentsWithAttendance.forEach(item => {
             const studentId = item.student?._id || item.student?.id || (typeof item.student === 'string' ? item.student : null);
@@ -89,7 +178,8 @@ export default function Attendance() {
           });
           setAttendance(existing);
 
-          // Build history summary
+          await offlineService.saveOfflineData(`attendance_history_${selectedClass}_${selectedDate}`, data.data);
+
           if (hasSavedRecords) {
             const present = data.data.stats.present;
             const absent = data.data.stats.absent;
@@ -110,7 +200,7 @@ export default function Attendance() {
       }
     };
     fetchHistory();
-  }, [selectedClass, selectedDate, refreshTrigger]);
+  }, [selectedClass, selectedDate, refreshTrigger, isOnline, classes]);
 
   const handleAttendanceChange = (studentId, status) => {
     if (!studentId) return;
@@ -156,22 +246,72 @@ export default function Attendance() {
       return;
     }
 
+    const uniqueDateStr = new Date(selectedDate).toISOString().split('T')[0];
+
+    const records = attendanceData.map(item => ({
+      uniqueId: `${selectedClass}_${item.studentId}_${uniqueDateStr}`,
+      studentId: item.studentId,
+      classId: selectedClass,
+      status: item.status,
+      timestamp: new Date(selectedDate).getTime(),
+      isSynced: false
+    }));
+
+    if (!isOnline) {
+      try {
+        setSaving(true);
+        for (const record of records) {
+          await offlineService.saveOfflineAttendance(record);
+        }
+
+        const presentCount = records.filter(r => r.status === 'present').length;
+        const absentCount = records.filter(r => r.status === 'absent').length;
+        const totalCount = presentCount + absentCount;
+        const percentage = totalCount > 0 ? ((presentCount / totalCount) * 100).toFixed(1) : 0;
+
+        const mockHistory = {
+          class: classInfo,
+          date: selectedDate,
+          students: students.map(s => ({
+            student: s,
+            attendance: {
+              status: attendance[s._id || s.id] || 'present',
+              subject,
+              notes: ''
+            }
+          })),
+          stats: {
+            total: totalCount,
+            present: presentCount,
+            absent: absentCount,
+            percentage
+          }
+        };
+
+        await offlineService.saveOfflineData(`attendance_history_${selectedClass}_${selectedDate}`, mockHistory);
+        setSyncStatus({ status: 'pending', count: records.length });
+        alert(`💾 Saved offline! ${records.length} records queued for sync when online.`);
+        setRefreshTrigger(prev => prev + 1);
+      } catch (err) {
+        console.error(err);
+        alert(`Failed to save offline: ${err.message}`);
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     try {
       setSaving(true);
-      const res = await fetch(`${API_BASE}/attendance/mark`, {
+      const res = await fetch(`${API_BASE}/attendance`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({
-          classId: selectedClass,
-          date: selectedDate,
-          subject,
-          attendanceData
-        })
+        body: JSON.stringify(records)
       });
       const data = await res.json();
       if (data.success) {
-        const presentCount = attendanceData.filter(r => r.status === 'present').length;
-        const absentCount = attendanceData.filter(r => r.status === 'absent').length;
+        const presentCount = records.filter(r => r.status === 'present').length;
+        const absentCount = records.filter(r => r.status === 'absent').length;
         alert(`✅ Attendance saved successfully!\nPresent: ${presentCount}, Absent: ${absentCount}`);
         setRefreshTrigger(prev => prev + 1);
       } else {
@@ -187,7 +327,7 @@ export default function Attendance() {
   const getAttendanceStats = () => {
     const presentCount = Object.values(attendance).filter(status => status === 'present').length;
     const absentCount = Object.values(attendance).filter(status => status === 'absent').length;
-    const leaveCount = Object.values(attendance).filter(status => status === 'leave').length;
+    const leaveCount = Object.values(attendance).filter(status => status === 'leave' || status === 'on-leave').length;
     const totalCount = presentCount + absentCount;
     const percentage = totalCount > 0 ? ((presentCount / totalCount) * 100).toFixed(1) : 0;
     return { presentCount, absentCount, leaveCount, percentage };
@@ -212,8 +352,58 @@ export default function Attendance() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-primary-900">Attendance Management</h1>
-        <p className="text-gray-600">Mark and manage student attendance (Live Data)</p>
+        <p className="text-gray-600">Mark and manage student attendance ({isOnline ? 'Live Mode' : 'Offline Cache'})</p>
       </div>
+
+      {/* Network & Sync Status Header Banner */}
+      {!isOnline && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl flex items-center justify-between shadow-sm animate-pulse">
+          <div className="flex items-center space-x-3">
+            <span className="text-amber-500 text-lg">⚠️</span>
+            <div>
+              <p className="text-sm font-semibold text-amber-800">You are currently offline</p>
+              <p className="text-xs text-amber-700">Attendance will be saved locally and synced automatically when you reconnect.</p>
+            </div>
+          </div>
+          <span className="px-3 py-1 bg-amber-200 text-amber-800 rounded-full text-xs font-bold uppercase tracking-wider">
+            Offline Mode
+          </span>
+        </div>
+      )}
+
+      {syncStatus.status && (
+        <div className={`p-4 rounded-xl border flex items-center justify-between shadow-sm transition-all duration-300 ${
+          syncStatus.status === 'syncing' ? 'bg-blue-50 border-blue-200 text-blue-800' :
+          syncStatus.status === 'completed' ? 'bg-green-50 border-green-200 text-green-800' :
+          syncStatus.status === 'failed' ? 'bg-red-50 border-red-200 text-red-800' :
+          syncStatus.status === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-800'
+        }`}>
+          <div className="flex items-center space-x-3">
+            <span className="text-lg">
+              {syncStatus.status === 'syncing' ? '🔄' :
+               syncStatus.status === 'completed' ? '✅' :
+               syncStatus.status === 'failed' ? '❌' : '⏳'}
+            </span>
+            <div>
+              <p className="text-sm font-semibold">
+                {syncStatus.status === 'syncing' ? 'Syncing local attendance data...' :
+                 syncStatus.status === 'completed' ? 'All local attendance data synced!' :
+                 syncStatus.status === 'failed' ? `Sync failed: ${syncStatus.error}` :
+                 syncStatus.status === 'pending' ? 'Offline attendance records queued' : 'Local storage status'}
+              </p>
+              <p className="text-xs opacity-90">
+                {syncStatus.status === 'syncing' ? `Uploading ${syncStatus.count} records...` :
+                 syncStatus.status === 'completed' ? `Successfully synced ${syncStatus.count} records.` :
+                 syncStatus.status === 'failed' ? 'Will retry when connection stabilizes.' :
+                 syncStatus.status === 'pending' ? `${syncStatus.count} unsynced record(s) waiting to sync.` : ''}
+              </p>
+            </div>
+          </div>
+          {syncStatus.status === 'syncing' && (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+          )}
+        </div>
+      )}
 
       {/* Controls */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -339,36 +529,44 @@ export default function Attendance() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleAttendanceChange(studentId, 'present')}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer ${
-                              attendance[studentId] === 'present'
-                                ? 'bg-emerald-600 text-white border border-emerald-700 hover:bg-emerald-700'
-                                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400'
-                            }`}
-                          >
-                            Present
-                          </button>
-                          <button
-                            onClick={() => handleAttendanceChange(studentId, 'absent')}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer ${
-                              attendance[studentId] === 'absent'
-                                ? 'bg-rose-600 text-white border border-rose-700 hover:bg-rose-700'
-                                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400'
-                            }`}
-                          >
-                            Absent
-                          </button>
-                          <button
-                            onClick={() => handleAttendanceChange(studentId, 'leave')}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer ${
-                              attendance[studentId] === 'leave'
-                                ? 'bg-amber-500 text-white border border-amber-600 hover:bg-amber-600'
-                                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400'
-                            }`}
-                          >
-                            Leave
-                          </button>
+                          {attendance[studentId] === 'on-leave' ? (
+                            <div className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-300">
+                              On Leave
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleAttendanceChange(studentId, 'present')}
+                                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer ${
+                                  attendance[studentId] === 'present'
+                                    ? 'bg-emerald-600 text-white border border-emerald-700 hover:bg-emerald-700'
+                                    : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400'
+                                }`}
+                              >
+                                Present
+                              </button>
+                              <button
+                                onClick={() => handleAttendanceChange(studentId, 'absent')}
+                                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer ${
+                                  attendance[studentId] === 'absent'
+                                    ? 'bg-rose-600 text-white border border-rose-700 hover:bg-rose-700'
+                                    : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400'
+                                }`}
+                              >
+                                Absent
+                              </button>
+                              <button
+                                onClick={() => handleAttendanceChange(studentId, 'leave')}
+                                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer ${
+                                  attendance[studentId] === 'leave'
+                                    ? 'bg-amber-500 text-white border border-amber-600 hover:bg-amber-600'
+                                    : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400'
+                                }`}
+                              >
+                                Leave
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

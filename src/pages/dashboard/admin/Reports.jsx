@@ -1,9 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
 
 export default function Reports() {
   const [selectedReport, setSelectedReport] = useState('attendance');
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState(null);
+  const [recentReports, setRecentReports] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(true);
 
   const reportTypes = [
     { id: 'attendance', name: 'Attendance Report', icon: '📊', description: 'Student and teacher attendance statistics' },
@@ -17,48 +23,31 @@ export default function Reports() {
   const periods = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
   const departments = ['all', 'Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'English'];
 
-  const recentReports = [
-    {
-      id: 1,
-      name: 'Monthly Attendance Report',
-      type: 'attendance',
-      period: 'February 2024',
-      generatedBy: 'Admin User',
-      generatedAt: '2024-03-01 10:30 AM',
-      size: '2.4 MB',
-      status: 'completed'
-    },
-    {
-      id: 2,
-      name: 'Academic Performance Q4 2023',
-      type: 'academic',
-      period: 'Q4 2023',
-      generatedBy: 'Admin User',
-      generatedAt: '2024-02-28 03:45 PM',
-      size: '5.1 MB',
-      status: 'completed'
-    },
-    {
-      id: 3,
-      name: 'Student Enrollment Summary',
-      type: 'enrollment',
-      period: 'Spring 2024',
-      generatedBy: 'Admin User',
-      generatedAt: '2024-02-25 11:20 AM',
-      size: '1.8 MB',
-      status: 'completed'
-    },
-    {
-      id: 4,
-      name: 'Faculty Workload Analysis',
-      type: 'faculty',
-      period: 'February 2024',
-      generatedBy: 'Admin User',
-      generatedAt: '2024-02-20 02:15 PM',
-      size: '3.2 MB',
-      status: 'completed'
-    },
-  ];
+  // Fetch recent reports on mount
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        setLoadingReports(true);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE}/reports`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          setRecentReports(data.data || []);
+        } else {
+          console.error('Failed to fetch reports:', data.message);
+        }
+      } catch (err) {
+        console.error('Error fetching reports:', err);
+      } finally {
+        setLoadingReports(false);
+      }
+    };
+    fetchReports();
+  }, []);
 
   const getStatusColor = (status) => {
     if (status === 'completed') return 'bg-green-100 text-green-800';
@@ -72,11 +61,162 @@ export default function Reports() {
     return report ? report.icon : '📄';
   };
 
+  const handleGenerateReport = async () => {
+    setIsGenerating(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      let endpoint = '';
+
+      switch (selectedReport) {
+        case 'attendance':
+          endpoint = `${API_BASE}/reports/attendance?period=${selectedPeriod}`;
+          break;
+        case 'academic':
+          endpoint = `${API_BASE}/reports/marks?period=${selectedPeriod}`;
+          break;
+        case 'enrollment':
+          endpoint = `${API_BASE}/reports/enrollment`;
+          break;
+        case 'faculty':
+          endpoint = `${API_BASE}/reports/faculty`;
+          break;
+        default:
+          setError('Report type not implemented yet');
+          setIsGenerating(false);
+          return;
+      }
+
+      const response = await fetch(endpoint, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to generate report');
+      }
+
+      // Download the CSV file
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedReport}_report_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+    } catch (err) {
+      setError(err.message || 'Failed to generate report');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadReport = async (reportId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/reports/${reportId}/download`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to download report');
+      }
+
+      // Get the filename from Content-Disposition header or use a default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'report.csv';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Download the file
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      alert(`Error downloading report: ${err.message}`);
+    }
+  };
+
+  const handleViewReport = async (reportId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/reports/${reportId}/view`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to view report');
+      }
+
+      // Get the blob and open in new tab
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`Error viewing report: ${err.message}`);
+    }
+  };
+
+  const handleDeleteReport = async (reportId) => {
+    if (!confirm('Are you sure you want to delete this report?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/reports/${reportId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Refresh the reports list
+        const updatedReports = recentReports.filter(r => r._id !== reportId);
+        setRecentReports(updatedReports);
+        alert('Report deleted successfully');
+      } else {
+        throw new Error(data.message || 'Failed to delete report');
+      }
+    } catch (err) {
+      alert(`Error deleting report: ${err.message}`);
+    }
+  };
+
   const stats = {
-    totalReports: 24,
-    thisMonth: 8,
-    processing: 2,
-    totalSize: '45.6 MB'
+    totalReports: recentReports.length,
+    thisMonth: recentReports.filter(r => {
+      const reportDate = new Date(r.createdAt);
+      const now = new Date();
+      return reportDate.getMonth() === now.getMonth() && reportDate.getFullYear() === now.getFullYear();
+    }).length,
+    processing: recentReports.filter(r => r.status === 'processing').length,
+    totalSize: `${recentReports.reduce((sum, r) => sum + parseFloat(r.fileSize) || 0, 0).toFixed(2)} MB`
   };
 
   return (
@@ -139,6 +279,13 @@ export default function Reports() {
         </div>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
       {/* Report Generation */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-primary-900 mb-4">Generate New Report</h2>
@@ -194,8 +341,12 @@ export default function Reports() {
             </select>
           </div>
           <div className="flex items-end">
-            <button className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-              Generate Report
+            <button
+              onClick={handleGenerateReport}
+              disabled={isGenerating}
+              className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGenerating ? 'Generating...' : 'Generate Report'}
             </button>
           </div>
         </div>
@@ -204,65 +355,84 @@ export default function Reports() {
       {/* Recent Reports */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-primary-900 mb-4">Recent Reports</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Report Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generated By</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generated At</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {recentReports.map((report) => (
-                <tr key={report.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg">{getReportIcon(report.type)}</span>
-                      <span className="text-sm font-medium text-primary-900">{report.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {report.type.charAt(0).toUpperCase() + report.type.slice(1)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {report.period}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {report.generatedBy}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {report.generatedAt}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {report.size}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(report.status)}`}>
-                      {report.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button className="text-primary-600 hover:text-primary-900 font-medium mr-3">
-                      Download
-                    </button>
-                    <button className="text-blue-600 hover:text-blue-900 font-medium mr-3">
-                      View
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 font-medium">
-                      Delete
-                    </button>
-                  </td>
+        {loadingReports ? (
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          </div>
+        ) : recentReports.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>No reports generated yet. Generate a report to see it here.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Report Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generated By</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generated At</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {recentReports.map((report) => (
+                  <tr key={report._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">{getReportIcon(report.type)}</span>
+                        <span className="text-sm font-medium text-primary-900">{report.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {report.type.charAt(0).toUpperCase() + report.type.slice(1)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {report.period}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {report.generatedBy?.name || 'Admin'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {new Date(report.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {report.fileSize}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(report.status)}`}>
+                        {report.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleDownloadReport(report._id)}
+                        className="text-primary-600 hover:text-primary-900 font-medium mr-3"
+                      >
+                        Download
+                      </button>
+                      <button
+                        onClick={() => handleViewReport(report._id)}
+                        className="text-blue-600 hover:text-blue-900 font-medium mr-3"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleDeleteReport(report._id)}
+                        className="text-red-600 hover:text-red-900 font-medium"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}

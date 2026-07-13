@@ -14,8 +14,9 @@ export default function Teachers() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [teachers, setTeachers] = useState([]);
+  const [pendingTeachers, setPendingTeachers] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  
+
   // New teacher form state
   const [newTeacher, setNewTeacher] = useState({
     firstName: '',
@@ -34,7 +35,7 @@ export default function Teachers() {
         setLoading(true);
         const response = await getUsers();
         const allUsers = response.data.users || [];
-        setTeachers(allUsers.filter((u) => u.role === 'teacher'));
+        setTeachers(allUsers.filter((u) => u.role === 'teacher' && u.status === 'approved'));
       } catch (err) {
         setError(err.message || 'Failed to load teachers');
       } finally {
@@ -42,8 +43,68 @@ export default function Teachers() {
       }
     };
 
+    const loadPendingTeachers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        console.log('[Teachers] Loading pending teachers from:', `${API_BASE}/users/pending-teachers`);
+        const response = await fetch(`${API_BASE}/users/pending-teachers`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await response.json();
+        console.log('[Teachers] Pending teachers response:', data);
+        if (data.success) {
+          setPendingTeachers(data.data.teachers || []);
+          console.log('[Teachers] Pending teachers loaded:', data.data.teachers?.length || 0);
+        } else {
+          console.error('[Teachers] Failed to load pending teachers:', data.message);
+        }
+      } catch (err) {
+        console.error('[Teachers] Failed to load pending teachers:', err);
+      }
+    };
+
     loadTeachers();
+    loadPendingTeachers();
   }, []);
+
+  const handleApproveReject = async (teacherId, status) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/users/${teacherId}/status`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSuccess(`Teacher ${status} successfully`);
+        // Refresh both lists
+        const teachersResponse = await getUsers();
+        const allUsers = teachersResponse.data.users || [];
+        setTeachers(allUsers.filter((u) => u.role === 'teacher'));
+        const pendingResponse = await fetch(`${API_BASE}/users/pending-teachers`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const pendingData = await pendingResponse.json();
+        if (pendingData.success) {
+          setPendingTeachers(pendingData.data.teachers || []);
+        }
+      } else {
+        setError(data.message || 'Failed to update teacher status');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to update teacher status');
+    }
+  };
 
   const handleAddTeacher = async (e) => {
     e.preventDefault();
@@ -126,7 +187,8 @@ export default function Teachers() {
     total: mappedTeachers.length,
     active: mappedTeachers.filter((t) => t.status === 'active').length,
     onLeave: mappedTeachers.filter((t) => t.status === 'on-leave').length,
-    avgRating: mappedTeachers.length ? (mappedTeachers.reduce((acc, t) => acc + t.rating, 0) / mappedTeachers.length).toFixed(1) : 0
+    avgRating: mappedTeachers.length ? (mappedTeachers.reduce((acc, t) => acc + t.rating, 0) / mappedTeachers.length).toFixed(1) : 0,
+    pending: pendingTeachers.length
   };
 
   if (loading) return <div className="p-6">Loading teachers...</div>;
@@ -139,7 +201,7 @@ export default function Teachers() {
         <p className="text-gray-600">Manage faculty members and their assignments</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -172,6 +234,14 @@ export default function Teachers() {
             </div>
           </div>
         </div>
+        <div className="bg-white rounded-xl shadow-sm border border-orange-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Pending Approval</p>
+              <p className="text-2xl font-bold text-orange-600 mt-2">{stats.pending}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Error/Success Messages */}
@@ -185,6 +255,45 @@ export default function Teachers() {
           {success}
         </div>
       )}
+
+      {/* Pending Teachers Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-orange-200 p-6">
+        <h2 className="text-lg font-semibold text-orange-800 mb-4">Pending Teacher Approvals ({pendingTeachers.length})</h2>
+        {pendingTeachers.length > 0 ? (
+          <div className="space-y-4">
+            {pendingTeachers.map((teacher) => (
+              <div key={teacher._id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-orange-50 rounded-lg border border-orange-100">
+                <div className="mb-3 sm:mb-0">
+                  <p className="font-medium text-gray-900">{teacher.name}</p>
+                  <p className="text-sm text-gray-600">{teacher.email}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {teacher.profile?.department || 'No department'} • {teacher.profile?.specialization || 'No specialization'}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleApproveReject(teacher._id, 'approved')}
+                    className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleApproveReject(teacher._id, 'rejected')}
+                    className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p className="text-sm">No pending teacher approvals at this time.</p>
+            <p className="text-xs mt-1">Teachers who register will appear here for approval.</p>
+          </div>
+        )}
+      </div>
 
       {/* Add Teacher Button */}
       <div className="flex justify-end">

@@ -15,7 +15,7 @@ const NavItem = ({ to, children, icon: Icon }) => (
         {Icon && (
           <Icon className={`w-4 h-4 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`} />
         )}
-        <span>{children}</span>
+        <span>{children}</span> 
         
         {/* Animated Underline */}
         <span

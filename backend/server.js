@@ -19,6 +19,8 @@ const tableRoutes = require('./routes/tables');
 const noticeRoutes = require('./routes/notices');
 const feeRoutes = require('./routes/fees');
 const syncRoutes = require('./routes/sync');
+const reportRoutes = require('./routes/reports');
+const leaveRoutes = require('./routes/leaves');
 
 const app = express();
 
@@ -65,6 +67,8 @@ app.use('/api/tables', tableRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/fees', feeRoutes);
 app.use('/api/sync', syncRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/leaves', leaveRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({

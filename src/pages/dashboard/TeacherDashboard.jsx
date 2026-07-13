@@ -350,15 +350,20 @@ export default function TeacherDashboard() {
   const fetchMyStudents = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('[TeacherDashboard] Fetching my students...');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/classes/teacher/students`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       const data = await response.json();
+      console.log('[TeacherDashboard] My students response:', data);
       if (data.success) {
-        setMyStudents(data.data || []);
+        setMyStudents(data.data.students || data.data || []);
+        console.log('[TeacherDashboard] Students loaded:', (data.data.students || data.data || []).length);
+      } else {
+        console.error('[TeacherDashboard] Failed to fetch students:', data.message);
       }
     } catch (err) {
-      console.error('Error fetching students:', err);
+      console.error('[TeacherDashboard] Error fetching students:', err);
     }
   };
 
@@ -366,15 +371,20 @@ export default function TeacherDashboard() {
   const fetchAttendanceRecords = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('[TeacherDashboard] Fetching attendance records...');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/attendance/teacher`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       const data = await response.json();
+      console.log('[TeacherDashboard] Attendance response:', data);
       if (data.success) {
-        setAttendanceRecords(data.data || []);
+        setAttendanceRecords(data.data.attendance || data.data || []);
+        console.log('[TeacherDashboard] Attendance records loaded:', (data.data.attendance || data.data || []).length);
+      } else {
+        console.error('[TeacherDashboard] Failed to fetch attendance:', data.message);
       }
     } catch (err) {
-      console.error('Error fetching attendance:', err);
+      console.error('[TeacherDashboard] Error fetching attendance:', err);
     }
   };
 
@@ -382,15 +392,20 @@ export default function TeacherDashboard() {
   const fetchMarksRecords = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('[TeacherDashboard] Fetching marks records...');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/teacher`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       const data = await response.json();
+      console.log('[TeacherDashboard] Marks response:', data);
       if (data.success) {
-        setMarksRecords(data.data || []);
+        setMarksRecords(data.data.marks || data.data || []);
+        console.log('[TeacherDashboard] Marks records loaded:', (data.data.marks || data.data || []).length);
+      } else {
+        console.error('[TeacherDashboard] Failed to fetch marks:', data.message);
       }
     } catch (err) {
-      console.error('Error fetching marks:', err);
+      console.error('[TeacherDashboard] Error fetching marks:', err);
     }
   };
 

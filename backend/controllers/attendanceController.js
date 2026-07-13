@@ -4,6 +4,7 @@ const Class = require('../models/Class');
 const { validationResult } = require('express-validator');
 const { startOfDay, endOfDay, format, subDays } = require('date-fns');
 const { v4: uuidv4 } = require('uuid');
+const { checkLeaveForDate } = require('./leaveController');
 
 const isJsonDB = () => global.jsonDB !== undefined;
 
@@ -211,18 +212,22 @@ const getAttendanceByClass = async (req, res) => {
         attendanceMap[record.student] = record;
       });
 
-      const studentsWithAttendance = (classDoc.students || []).map(studentId => {
+      const studentsWithAttendance = await Promise.all((classDoc.students || []).map(async (studentId) => {
         const student = global.jsonDB.users.find(u => u._id === studentId);
         const attendanceRecord = attendanceMap[studentId];
+        
+        // Check if student is on approved leave
+        const isOnLeave = await checkLeaveForDate(studentId, attendanceDate);
+        
         return {
           student: student,
           attendance: attendanceRecord || {
-            status: 'present',
+            status: isOnLeave ? 'on-leave' : 'present',
             subject: '',
-            notes: ''
+            notes: isOnLeave ? 'On approved leave' : ''
           }
         };
-      });
+      }));
 
       const stats = await getAttendanceStats(classId, attendanceDate);
 
@@ -267,17 +272,21 @@ const getAttendanceByClass = async (req, res) => {
       attendanceMap[record.student._id.toString()] = record;
     });
 
-    const studentsWithAttendance = classDoc.students.map(student => {
+    const studentsWithAttendance = await Promise.all(classDoc.students.map(async (student) => {
       const attendanceRecord = attendanceMap[student._id.toString()];
+      
+      // Check if student is on approved leave
+      const isOnLeave = await checkLeaveForDate(student._id.toString(), attendanceDate);
+      
       return {
         student: student,
         attendance: attendanceRecord || {
-          status: 'present',
+          status: isOnLeave ? 'on-leave' : 'present',
           subject: '',
-          notes: ''
+          notes: isOnLeave ? 'On approved leave' : ''
         }
       };
-    });
+    }));
 
     const stats = await getAttendanceStats(classId, attendanceDate);
 
@@ -584,9 +593,15 @@ const getAttendanceReport = async (req, res) => {
 
 const getTeacherAttendance = async (req, res) => {
   try {
+    console.log('[getTeacherAttendance] Teacher ID:', req.user.id);
+    console.log('[getTeacherAttendance] User Role:', req.user.role);
+    
     if (isJsonDB()) {
-      const attendance = global.jsonDB.attendance
-        .filter(a => a.teacher === req.user.id)
+      console.log('[getTeacherAttendance] Using JSON DB mode');
+      console.log('[getTeacherAttendance] Total attendance records:', global.jsonDB.attendance.length);
+      const teacherAttendance = global.jsonDB.attendance.filter(a => a.teacher === req.user.id);
+      console.log('[getTeacherAttendance] Attendance for this teacher:', teacherAttendance.length);
+      const attendance = teacherAttendance
         .map(a => ({
           ...a,
           student: global.jsonDB.users.find(u => u._id === a.student),
@@ -594,13 +609,16 @@ const getTeacherAttendance = async (req, res) => {
         }))
         .filter(a => a.student && a.class)
         .sort((a, b) => new Date(b.date) - new Date(a.date));
-
+      console.log('[getTeacherAttendance] Attendance with populated data:', attendance.length);
       return res.status(200).json({ success: true, data: { attendance } });
     }
+    
+    console.log('[getTeacherAttendance] Using MongoDB mode');
     const attendance = await Attendance.find({ teacher: req.user.id })
       .populate('student', 'name studentId')
       .populate('class', 'name code')
       .sort({ date: -1 });
+    console.log('[getTeacherAttendance] Attendance records found:', attendance.length);
     res.status(200).json({ success: true, data: { attendance } });
   } catch (error) {
     console.error('Get teacher attendance error:', error);

@@ -179,7 +179,6 @@ export default function SignUp() {
                 >
                   <option value="student">Student Account</option>
                   <option value="teacher">Faculty / Teacher Account</option>
-                  <option value="admin">System Administrator</option>
                 </select>
               </div>
             </div>

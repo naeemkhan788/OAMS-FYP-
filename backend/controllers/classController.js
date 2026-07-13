@@ -246,15 +246,28 @@ const getTeacherClasses = async (req, res) => {
 
 const getTeacherStudents = async (req, res) => {
   try {
+    console.log('[getTeacherStudents] Teacher ID:', req.user.id);
+    console.log('[getTeacherStudents] User Role:', req.user.role);
+    
     if (isJsonDB()) {
+      console.log('[getTeacherStudents] Using JSON DB mode');
+      console.log('[getTeacherStudents] All classes:', global.jsonDB.classes.map(c => ({ _id: c._id, name: c.name, teacher: c.teacher })));
       const classes = global.jsonDB.classes.filter(c => c.teacher === req.user.id);
+      console.log('[getTeacherStudents] Classes for this teacher:', classes.length, classes.map(c => ({ _id: c._id, name: c.name, studentsCount: c.students?.length || 0 })));
       const studentIds = classes.flatMap(c => c.students || []);
+      console.log('[getTeacherStudents] Student IDs:', studentIds);
       const students = studentIds.map(id => global.jsonDB.users.find(u => u._id === id)).filter(Boolean);
+      console.log('[getTeacherStudents] Students found:', students.length);
       return res.status(200).json({ success: true, data: { students } });
     }
+    
+    console.log('[getTeacherStudents] Using MongoDB mode');
     const classes = await Class.find({ teacher: req.user.id });
+    console.log('[getTeacherStudents] Classes for this teacher:', classes.length);
     const studentIds = classes.flatMap(c => c.students);
+    console.log('[getTeacherStudents] Student IDs:', studentIds);
     const students = await User.find({ _id: { $in: studentIds } }).select('name email studentId');
+    console.log('[getTeacherStudents] Students found:', students.length);
     res.status(200).json({ success: true, data: { students } });
   } catch (error) {
     console.error('Get teacher students error:', error);

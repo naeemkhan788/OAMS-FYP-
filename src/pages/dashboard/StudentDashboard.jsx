@@ -166,6 +166,66 @@ export default function StudentDashboard() {
     }
   };
 
+  // Download student report
+  const handleDownloadReport = async () => {
+    try {
+      // Fetch attendance and marks data
+      await Promise.all([fetchMyAttendance(), fetchMyMarks()]);
+      
+      // Generate CSV content
+      let csv = 'Student Report\n';
+      csv += `Generated Date,${new Date().toISOString().split('T')[0]}\n\n`;
+      
+      // Attendance section
+      csv += '=== ATTENDANCE RECORDS ===\n';
+      csv += 'Date,Class,Status\n';
+      if (myAttendance.length > 0) {
+        myAttendance.forEach(record => {
+          const date = record.date ? new Date(record.date).toLocaleDateString() : '-';
+          const className = record.class?.name || '-';
+          const status = record.status || '-';
+          csv += `${date},${className},${status}\n`;
+        });
+      } else {
+        csv += 'No attendance records\n';
+      }
+      
+      csv += '\n';
+      
+      // Marks section
+      csv += '=== MARKS RECORDS ===\n';
+      csv += 'Subject,Assessment Type,Marks Obtained,Max Marks,Date\n';
+      if (myMarks.length > 0) {
+        myMarks.forEach(mark => {
+          const subject = mark.subject || '-';
+          const type = mark.assessmentType || '-';
+          const marksObtained = mark.marksObtained || 0;
+          const maxMarks = mark.maxMarks || 0;
+          const date = mark.assessmentDate ? new Date(mark.assessmentDate).toLocaleDateString() : '-';
+          csv += `${subject},${type},${marksObtained},${maxMarks},${date}\n`;
+        });
+      } else {
+        csv += 'No marks records\n';
+      }
+      
+      // Download the CSV file
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `student_report_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      alert('Report downloaded successfully!');
+    } catch (err) {
+      console.error('Error downloading report:', err);
+      alert('Failed to download report. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -320,7 +380,10 @@ export default function StudentDashboard() {
             </svg>
             <span className="text-xs">Notices</span>
           </button>
-          <button className="flex flex-col items-center justify-center px-4 py-3 bg-gray-50 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
+          <button 
+            onClick={handleDownloadReport}
+            className="flex flex-col items-center justify-center px-4 py-3 bg-gray-50 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+          >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
