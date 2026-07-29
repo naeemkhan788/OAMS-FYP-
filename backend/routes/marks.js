@@ -20,7 +20,7 @@ const addMarksValidation = [
     .notEmpty()
     .withMessage('Subject is required'),
   body('assessmentType')
-    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'])
+    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'attendance', 'paper'])
     .withMessage('Invalid assessment type'),
   body('title')
     .notEmpty()
@@ -57,7 +57,7 @@ const getMarksValidation = [
     .withMessage('Subject cannot be empty'),
   query('assessmentType')
     .optional()
-    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'])
+    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'attendance', 'paper'])
     .withMessage('Invalid assessment type')
 ];
 
@@ -68,7 +68,7 @@ const getStudentMarksValidation = [
     .withMessage('Subject cannot be empty'),
   query('assessmentType')
     .optional()
-    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'])
+    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'attendance', 'paper'])
     .withMessage('Invalid assessment type')
 ];
 
@@ -80,7 +80,7 @@ const publishMarksValidation = [
     .notEmpty()
     .withMessage('Subject is required'),
   body('assessmentType')
-    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'])
+    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'attendance', 'paper'])
     .withMessage('Invalid assessment type'),
   body('title')
     .notEmpty()
