@@ -12,7 +12,7 @@ export default function Marks() {
   const [students, setStudents] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedStudent, setSelectedStudent] = useState('');
-  const [studentMarks, setStudentMarks] = useState({ quiz: '', assignment: '', presentation: '', paper: '' });
+  const [studentMarks, setStudentMarks] = useState({ quiz: '', assignment: '', presentation: '', paper: '', attendance: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -113,16 +113,16 @@ export default function Marks() {
     };
     fetchStudents();
     setSelectedStudent('');
-    setStudentMarks({ quiz: '', assignment: '', presentation: '', paper: '' });
+    setStudentMarks({ quiz: '', assignment: '', presentation: '', paper: '', attendance: '' });
   }, [selectedClass, isOnline]);
 
   const handleStudentSelect = (studentId) => {
     setSelectedStudent(studentId);
-    setStudentMarks({ quiz: '', assignment: '', presentation: '', paper: '' });
+    setStudentMarks({ quiz: '', assignment: '', presentation: '', paper: '', attendance: '' });
   };
 
   const handleMarkChange = (assessment, value) => {
-    const maxMarks = { quiz: 5, assignment: 5, presentation: 5, paper: 20 };
+    const maxMarks = { quiz: 5, assignment: 5, presentation: 5, paper: 20, attendance: 5 };
     const numValue = Math.max(0, Math.min(maxMarks[assessment], parseInt(value) || 0));
     setStudentMarks(prev => ({ ...prev, [assessment]: numValue.toString() }));
   };
@@ -146,6 +146,7 @@ export default function Marks() {
           { type: 'quiz', marks: parseInt(studentMarks.quiz) || 0, max: 5, title: `${subject} Quiz` },
           { type: 'assignment', marks: parseInt(studentMarks.assignment) || 0, max: 5, title: `${subject} Assignment` },
           { type: 'presentation', marks: parseInt(studentMarks.presentation) || 0, max: 5, title: `${subject} Presentation` },
+          { type: 'attendance', marks: parseInt(studentMarks.attendance) || 0, max: 5, title: `${subject} Attendance` },
           { type: 'paper', marks: parseInt(studentMarks.paper) || 0, max: 20, title: `${subject} Paper` },
         ];
 
@@ -191,6 +192,7 @@ export default function Marks() {
         { type: 'quiz', marks: parseInt(studentMarks.quiz) || 0, max: 5, title: `${subject} Quiz` },
         { type: 'assignment', marks: parseInt(studentMarks.assignment) || 0, max: 5, title: `${subject} Assignment` },
         { type: 'presentation', marks: parseInt(studentMarks.presentation) || 0, max: 5, title: `${subject} Presentation` },
+        { type: 'attendance', marks: parseInt(studentMarks.attendance) || 0, max: 5, title: `${subject} Attendance` },
         { type: 'paper', marks: parseInt(studentMarks.paper) || 0, max: 20, title: `${subject} Paper` },
       ];
 
@@ -231,8 +233,9 @@ export default function Marks() {
     const quiz = parseInt(studentMarks.quiz) || 0;
     const assignment = parseInt(studentMarks.assignment) || 0;
     const presentation = parseInt(studentMarks.presentation) || 0;
+    const attendance = parseInt(studentMarks.attendance) || 0;
     const paper = parseInt(studentMarks.paper) || 0;
-    return quiz + assignment + presentation + paper;
+    return quiz + assignment + presentation + attendance + paper;
   };
 
   const getGrade = (marks, maxMarks) => {
@@ -250,7 +253,7 @@ export default function Marks() {
 
   const selectedStudentData = students.find(s => s._id === selectedStudent);
   const totalMarks = getTotalContinuousMarks();
-  const overallGrade = totalMarks > 0 ? getGrade(totalMarks, 35) : '';
+  const overallGrade = totalMarks > 0 ? getGrade(totalMarks, 40) : '';
 
   if (loading) {
     return (
@@ -394,6 +397,7 @@ export default function Marks() {
                     { key: 'quiz', label: 'Quiz', max: 5 },
                     { key: 'assignment', label: 'Assignment', max: 5 },
                     { key: 'presentation', label: 'Presentation', max: 5 },
+                    { key: 'attendance', label: 'Attendance', max: 5 },
                     { key: 'paper', label: 'Paper', max: 20 }
                   ].map(item => (
                     <div key={item.key} className="flex items-center justify-between">
@@ -414,7 +418,7 @@ export default function Marks() {
               <div>
                 <h4 className="text-md font-semibold text-gray-900 mb-4">Marks Summary</h4>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
-                  {['quiz', 'assignment', 'presentation', 'paper'].map(key => (
+                  {['quiz', 'assignment', 'presentation', 'attendance', 'paper'].map(key => (
                     <div key={key} className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-700 capitalize">{key}:</span>
                       <span className="text-sm text-gray-900">{studentMarks[key] || 0}/{key === 'paper' ? 20 : 5}</span>
@@ -423,7 +427,7 @@ export default function Marks() {
                   <div className="border-t border-gray-300 pt-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-bold text-gray-900">Total:</span>
-                      <span className="text-sm font-bold text-gray-900">{totalMarks}/35</span>
+                      <span className="text-sm font-bold text-gray-900">{totalMarks}/40</span>
                     </div>
                     <div className="flex justify-between items-center mt-1">
                       <span className="text-sm font-medium text-gray-700">Grade:</span>
@@ -457,37 +461,26 @@ export default function Marks() {
       {/* Final Grade Calculation Summary */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-primary-900 mb-4">Final Grade Calculation</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-blue-900 mb-2">Continuous Assessment (35%)</h3>
+            <h3 className="text-sm font-semibold text-blue-900 mb-2">Continuous Assessment (40%)</h3>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between"><span>Quiz:</span><span>5 marks</span></div>
               <div className="flex justify-between"><span>Assignment:</span><span>5 marks</span></div>
               <div className="flex justify-between"><span>Presentation:</span><span>5 marks</span></div>
+              <div className="flex justify-between"><span>Attendance:</span><span>5 marks</span></div>
               <div className="flex justify-between"><span>Paper:</span><span>20 marks</span></div>
               <div className="border-t border-blue-300 pt-1 mt-2">
-                <div className="flex justify-between font-medium"><span>Total:</span><span>35 marks</span></div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-green-900 mb-2">Final Exams (65%)</h3>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>Mid Term Exam:</span><span>100 marks</span></div>
-              <div className="flex justify-between"><span>Final Term Exam:</span><span>100 marks</span></div>
-              <div className="border-t border-green-300 pt-1 mt-2">
-                <div className="flex justify-between font-medium"><span>Combined:</span><span>200 marks</span></div>
-                <div className="flex justify-between font-medium"><span>Weight:</span><span>65%</span></div>
+                <div className="flex justify-between font-medium"><span>Total:</span><span>40 marks</span></div>
               </div>
             </div>
           </div>
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-purple-900 mb-2">Overall Total</h3>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>Continuous Assessment:</span><span>35 marks</span></div>
-              <div className="flex justify-between"><span>Final Exams:</span><span>65 marks</span></div>
+              <div className="flex justify-between"><span>Continuous Assessment:</span><span>40 marks</span></div>
               <div className="border-t border-purple-300 pt-1 mt-2">
-                <div className="flex justify-between font-bold text-lg"><span>Total:</span><span>100 marks</span></div>
+                <div className="flex justify-between font-bold text-lg"><span>Total:</span><span>40 marks</span></div>
               </div>
             </div>
           </div>

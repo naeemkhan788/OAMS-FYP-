@@ -11,6 +11,9 @@ require('../models/Notice');
 require('../models/Report');
 require('../models/Leave');
 
+// Import admin seeding function
+const seedAdminAccount = require('../scripts/seedAdmin');
+
 const startLocalMongod = async () => {
   try {
     console.log('MongoDB not found. Please install MongoDB Community Server:');
@@ -46,6 +49,9 @@ const connectDB = async () => {
     
     // Ensure JSON DB mode is completely disabled
     global.jsonDB = undefined;
+    
+    // Seed admin account after successful MongoDB connection
+    await seedAdminAccount();
   } catch (error) {
     console.error('❌ MongoDB Connection Error:', error.message);
     console.log('\n⚡ Fallback to local JSON file storage mode...');
@@ -88,6 +94,9 @@ const connectDB = async () => {
     console.log(`✅ Fallback JSON DB Connected: ${dbPath}`);
     console.log(`📊 Users: ${jsonDB.users.length}, Classes: ${jsonDB.classes.length}`);
     console.log('================================================================\n');
+    
+    // Seed admin account for JSON DB mode
+    await seedAdminAccount();
   }
 };
 

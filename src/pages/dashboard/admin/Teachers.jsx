@@ -9,13 +9,17 @@ const authHeaders = () => {
 
 export default function Teachers() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [teachers, setTeachers] = useState([]);
   const [pendingTeachers, setPendingTeachers] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showAttendanceForm, setShowAttendanceForm] = useState(false);
+  const [showNotesForm, setShowNotesForm] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [teacherNotes, setTeacherNotes] = useState([]);
+  const [teacherAttendance, setTeacherAttendance] = useState([]);
 
   // New teacher form state
   const [newTeacher, setNewTeacher] = useState({
@@ -27,6 +31,20 @@ export default function Teachers() {
     department: 'Computer Science',
     specialization: '',
     experience: ''
+  });
+
+  // Attendance form state
+  const [attendanceForm, setAttendanceForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    status: 'present',
+    notes: '',
+    checkInTime: '',
+    checkOutTime: ''
+  });
+
+  // Notes form state
+  const [noteForm, setNoteForm] = useState({
+    note: ''
   });
 
   useEffect(() => {
@@ -162,6 +180,146 @@ export default function Teachers() {
     }
   };
 
+  const handleMarkAttendance = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!selectedTeacher) {
+      setError('No teacher selected');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/teacher-attendance`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          teacherId: selectedTeacher._id,
+          date: attendanceForm.date,
+          status: attendanceForm.status,
+          notes: attendanceForm.notes,
+          checkInTime: attendanceForm.checkInTime || null,
+          checkOutTime: attendanceForm.checkOutTime || null
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSuccess('Teacher attendance marked successfully!');
+        setAttendanceForm({
+          date: new Date().toISOString().split('T')[0],
+          status: 'present',
+          notes: '',
+          checkInTime: '',
+          checkOutTime: ''
+        });
+        setShowAttendanceForm(false);
+        setSelectedTeacher(null);
+      } else {
+        setError(data.message || 'Failed to mark attendance');
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleAddNote = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!selectedTeacher) {
+      setError('No teacher selected');
+      return;
+    }
+
+    if (!noteForm.note.trim()) {
+      setError('Note cannot be empty');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/teacher-notes`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          teacherId: selectedTeacher._id,
+          note: noteForm.note
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSuccess('Note added successfully!');
+        setNoteForm({ note: '' });
+        setShowNotesForm(false);
+        loadTeacherNotes(selectedTeacher._id);
+      } else {
+        setError(data.message || 'Failed to add note');
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const loadTeacherNotes = async (teacherId) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/teacher-notes/${teacherId}`, {
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTeacherNotes(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to load teacher notes:', err);
+    }
+  };
+
+  const loadTeacherAttendance = async (teacherId) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/teacher-attendance?teacherId=${teacherId}`, {
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTeacherAttendance(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to load teacher attendance:', err);
+    }
+  };
+
+  const openAttendanceForm = (teacher) => {
+    setSelectedTeacher(teacher);
+    setAttendanceForm({
+      date: new Date().toISOString().split('T')[0],
+      status: 'present',
+      notes: '',
+      checkInTime: '',
+      checkOutTime: ''
+    });
+    setShowAttendanceForm(true);
+    setShowNotesForm(false);
+  };
+
+  const openNotesForm = (teacher) => {
+    setSelectedTeacher(teacher);
+    setNoteForm({ note: '' });
+    setShowNotesForm(true);
+    setShowAttendanceForm(false);
+    loadTeacherNotes(teacher._id);
+  };
+
+  const closeForms = () => {
+    setShowAttendanceForm(false);
+    setShowNotesForm(false);
+    setSelectedTeacher(null);
+    setTeacherNotes([]);
+    setTeacherAttendance([]);
+  };
+
   const mappedTeachers = teachers.map((t) => ({
     id: t._id,
     name: t.name,
@@ -179,8 +337,7 @@ export default function Teachers() {
   const filteredTeachers = mappedTeachers.filter((teacher) => {
     const matchesSearch = teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       teacher.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = selectedDepartment === 'all' || teacher.department === selectedDepartment;
-    return matchesSearch && matchesDepartment;
+    return matchesSearch;
   });
 
   const stats = {
@@ -304,6 +461,154 @@ export default function Teachers() {
           {showAddForm ? 'Cancel' : '+ Add New Teacher'}
         </button>
       </div>
+
+      {/* Attendance Form */}
+      {showAttendanceForm && selectedTeacher && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-primary-900">Mark Attendance - {selectedTeacher.name}</h2>
+            <button
+              onClick={closeForms}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          <form onSubmit={handleMarkAttendance} className="space-y-4 max-w-3xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input
+                  type="date"
+                  value={attendanceForm.date}
+                  onChange={(e) => setAttendanceForm({ ...attendanceForm, date: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={attendanceForm.status}
+                  onChange={(e) => setAttendanceForm({ ...attendanceForm, status: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  required
+                >
+                  <option value="present">Present</option>
+                  <option value="absent">Absent</option>
+                  <option value="leave">Leave</option>
+                  <option value="late">Late</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Check In Time</label>
+                <input
+                  type="time"
+                  value={attendanceForm.checkInTime}
+                  onChange={(e) => setAttendanceForm({ ...attendanceForm, checkInTime: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Check Out Time</label>
+                <input
+                  type="time"
+                  value={attendanceForm.checkOutTime}
+                  onChange={(e) => setAttendanceForm({ ...attendanceForm, checkOutTime: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <textarea
+                value={attendanceForm.notes}
+                onChange={(e) => setAttendanceForm({ ...attendanceForm, notes: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                rows="3"
+                placeholder="Optional notes about attendance..."
+              />
+            </div>
+            <div className="flex space-x-4">
+              <button
+                type="submit"
+                className="px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                Mark Attendance
+              </button>
+              <button
+                type="button"
+                onClick={closeForms}
+                className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Notes Form */}
+      {showNotesForm && selectedTeacher && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-primary-900">Add Note - {selectedTeacher.name}</h2>
+            <button
+              onClick={closeForms}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          <form onSubmit={handleAddNote} className="space-y-4 max-w-3xl">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Note</label>
+              <textarea
+                value={noteForm.note}
+                onChange={(e) => setNoteForm({ note: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                rows="4"
+                placeholder="Enter your note for this teacher..."
+                required
+              />
+            </div>
+            <div className="flex space-x-4">
+              <button
+                type="submit"
+                className="px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                Add Note
+              </button>
+              <button
+                type="button"
+                onClick={closeForms}
+                className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+
+          {/* Existing Notes */}
+          {teacherNotes.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-md font-semibold text-gray-700 mb-3">Previous Notes</h3>
+              <div className="space-y-3">
+                {teacherNotes.map((note) => (
+                  <div key={note._id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <p className="text-gray-800">{note.note}</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Added by {note.addedBy?.name || 'Admin'} on {new Date(note.addedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Add Teacher Form */}
       {showAddForm && (
@@ -429,18 +734,6 @@ export default function Teachers() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg"
             />
-            <select
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
-            >
-              <option value="all">All Departments</option>
-              <option value="Computer Science">Computer Science</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Physics">Physics</option>
-              <option value="Chemistry">Chemistry</option>
-              <option value="English">English</option>
-            </select>
           </div>
         </div>
       </div>
@@ -459,6 +752,7 @@ export default function Teachers() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -473,6 +767,22 @@ export default function Teachers() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{teacher.students}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{teacher.rating}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{teacher.status}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => openAttendanceForm(teachers.find(t => t._id === teacher.id))}
+                        className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Attendance
+                      </button>
+                      <button
+                        onClick={() => openNotesForm(teachers.find(t => t._id === teacher.id))}
+                        className="px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded hover:bg-purple-700 transition-colors"
+                      >
+                        Notes
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

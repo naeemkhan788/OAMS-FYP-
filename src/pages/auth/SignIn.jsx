@@ -58,6 +58,9 @@ export default function SignIn() {
         console.error('Login error:', error);
         if (error.message === 'Failed to fetch') {
           alert('Cannot connect to server. Please make sure backend is running on port 5002.');
+        } else if (error.message.includes('verify your email') || error.message.includes('Email not verified')) {
+          // Redirect to email verification page
+          navigate('/verify-otp', { state: { email: formData.email } });
         } else {
           alert(error.message || 'Login failed. Please check your credentials.');
         }

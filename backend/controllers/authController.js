@@ -2,6 +2,8 @@ const User = require('../models/User');
 const { validationResult } = require('express-validator');
 const { generateToken } = require('../middleware/auth');
 const crypto = require('crypto');
+const { generateOTP, hashOTP, verifyOTP: verifyOTPHash, isOTPExpired, getOTPExpiration, canRequestOTP, canAttemptOTP, clearOTPFields } = require('../utils/otp');
+const { sendOTPEmail, sendPasswordResetEmail } = require('../utils/email');
 
 const isJsonDB = () => global.jsonDB !== undefined;
 
@@ -19,7 +21,15 @@ const register = async (req, res) => {
       });
     }
 
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, createdByAdmin } = req.body;
+
+    // Prevent admin account creation through API
+    if (role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin account creation is not allowed through this endpoint'
+      });
+    }
 
     // JSON DB Mode
     if (isJsonDB()) {
@@ -42,25 +52,47 @@ const register = async (req, res) => {
         password: hashedPassword,
         role: role || 'student',
         isActive: true,
+        isVerified: createdByAdmin ? true : false, // Skip verification if created by admin
+        status: role === 'teacher' ? 'pending' : 'approved',
         profile: req.body.profile || {},
         createdAt: new Date().toISOString()
       };
 
       global.jsonDB.users.push(newUser);
       global.jsonDB.save();
-      console.log('New user registered:', newUser.name, 'Role:', newUser.role);
+      console.log('New user registered:', newUser.name, 'Role:', newUser.role, 'Verified:', newUser.isVerified);
 
-      const token = generateToken(userId);
+      // Only send OTP if not created by admin
+      if (!createdByAdmin) {
+        // Generate and send OTP for email verification
+        const otp = generateOTP();
+        const hashedOTP = await hashOTP(otp);
+        const otpExpire = getOTPExpiration();
+
+        // Store OTP in user record (in memory for JSON DB)
+        newUser.emailOTP = hashedOTP;
+        newUser.emailOTPExpire = otpExpire.toISOString();
+        newUser.otpAttempts = 0;
+        newUser.lastOTPSentAt = new Date().toISOString();
+
+        global.jsonDB.save();
+
+        // Send OTP email (will log to console if SMTP not configured)
+        await sendOTPEmail(email, otp, name);
+      }
 
       return res.status(201).json({
         success: true,
-        message: 'User registered successfully',
-        token,
+        message: createdByAdmin 
+          ? 'User created successfully. Account is ready to use.' 
+          : 'Registration successful. Please verify your email using the OTP sent to your registered email.',
         user: {
           _id: userId,
           name,
           email,
-          role: role || 'student'
+          role: role || 'student',
+          isVerified: newUser.isVerified,
+          status: newUser.status
         }
       });
     }
@@ -90,21 +122,42 @@ const register = async (req, res) => {
       role: role || 'student',
       studentId,
       teacherId,
+      isVerified: createdByAdmin ? true : false, // Skip verification if created by admin
       profile: req.body.profile || {}
     });
 
-    const token = generateToken(user._id);
-    console.log('New user registered:', user.name, 'Role:', user.role);
+    // Only send OTP if not created by admin
+    if (!createdByAdmin) {
+      // Generate and send OTP for email verification
+      const otp = generateOTP();
+      const hashedOTP = await hashOTP(otp);
+      const otpExpire = getOTPExpiration();
+
+      // Store OTP in user record
+      user.emailOTP = hashedOTP;
+      user.emailOTPExpire = otpExpire;
+      user.otpAttempts = 0;
+      user.lastOTPSentAt = new Date();
+      await user.save();
+
+      // Send OTP email (will log to console if SMTP not configured)
+      await sendOTPEmail(email, otp, name);
+    }
+
+    console.log('New user registered:', user.name, 'Role:', user.role, 'Verified:', user.isVerified);
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
-      token,
+      message: createdByAdmin 
+        ? 'User created successfully. Account is ready to use.' 
+        : 'Registration successful. Please verify your email using the OTP sent to your registered email.',
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isVerified: user.isVerified,
+        status: user.status
       }
     });
   } catch (error) {
@@ -158,6 +211,15 @@ const login = async (req, res) => {
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
+        });
+      }
+
+      // Check email verification
+      if (!user.isVerified) {
+        console.log('[LOGIN] Email not verified (JSON DB):', email);
+        return res.status(403).json({
+          success: false,
+          message: 'Please verify your email using the OTP sent to your registered email.'
         });
       }
 
@@ -221,6 +283,15 @@ const login = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
+      });
+    }
+
+    // Check email verification
+    if (!user.isVerified) {
+      console.log('[LOGIN] Email not verified:', email);
+      return res.status(403).json({
+        success: false,
+        message: 'Please verify your email using the OTP sent to your registered email.'
       });
     }
 
@@ -373,6 +444,445 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const verifyOTP = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { email, otp } = req.body;
+
+    if (isJsonDB()) {
+      const user = global.jsonDB.users.find(u => u.email === email);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // Check if OTP has expired
+      if (isOTPExpired(user.emailOTPExpire)) {
+        return res.status(400).json({
+          success: false,
+          message: 'OTP has expired. Please request a new OTP.'
+        });
+      }
+
+      // Check attempt limit
+      if (!canAttemptOTP(user.otpAttempts)) {
+        return res.status(429).json({
+          success: false,
+          message: 'Maximum OTP attempts exceeded. Please request a new OTP.'
+        });
+      }
+
+      // Verify OTP
+      const isValid = await verifyOTPHash(otp, user.emailOTP);
+      user.otpAttempts = (user.otpAttempts || 0) + 1;
+
+      if (!isValid) {
+        global.jsonDB.save();
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid OTP. Please try again.'
+        });
+      }
+
+      // OTP is valid - mark user as verified and clear OTP fields
+      user.isVerified = true;
+      clearOTPFields(user);
+      global.jsonDB.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Email verified successfully. You can now log in.'
+      });
+    }
+
+    // MongoDB Mode
+    const user = await User.findOne({ email }).select('+emailOTP +emailOTPExpire +otpAttempts');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if OTP has expired
+    if (isOTPExpired(user.emailOTPExpire)) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired. Please request a new OTP.'
+      });
+    }
+
+    // Check attempt limit
+    if (!canAttemptOTP(user.otpAttempts)) {
+      return res.status(429).json({
+        success: false,
+        message: 'Maximum OTP attempts exceeded. Please request a new OTP.'
+      });
+    }
+
+    // Verify OTP
+    const isValid = await verifyOTPHash(otp, user.emailOTP);
+    user.otpAttempts += 1;
+
+    if (!isValid) {
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP. Please try again.'
+      });
+    }
+
+    // OTP is valid - mark user as verified and clear OTP fields
+    user.isVerified = true;
+    clearOTPFields(user);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Email verified successfully. You can now log in.'
+    });
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'OTP verification failed'
+    });
+  }
+};
+
+const resendOTP = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { email } = req.body;
+
+    if (isJsonDB()) {
+      const user = global.jsonDB.users.find(u => u.email === email);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      if (user.isVerified) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is already verified'
+        });
+      }
+
+      // Rate limiting check
+      if (!canRequestOTP(user.lastOTPSentAt)) {
+        return res.status(429).json({
+          success: false,
+          message: 'Please wait 60 seconds before requesting another OTP'
+        });
+      }
+
+      // Generate new OTP
+      const otp = generateOTP();
+      const hashedOTP = await hashOTP(otp);
+      const otpExpire = getOTPExpiration();
+
+      user.emailOTP = hashedOTP;
+      user.emailOTPExpire = otpExpire.toISOString();
+      user.otpAttempts = 0;
+      user.lastOTPSentAt = new Date().toISOString();
+
+      global.jsonDB.save();
+
+      // Send OTP email
+      await sendOTPEmail(email, otp, user.name);
+
+      return res.status(200).json({
+        success: true,
+        message: 'New OTP sent to your email'
+      });
+    }
+
+    // MongoDB Mode
+    const user = await User.findOne({ email }).select('+emailOTP +emailOTPExpire +otpAttempts +lastOTPSentAt');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified'
+      });
+    }
+
+    // Rate limiting check
+    if (!canRequestOTP(user.lastOTPSentAt)) {
+      return res.status(429).json({
+        success: false,
+        message: 'Please wait 60 seconds before requesting another OTP'
+      });
+    }
+
+    // Generate new OTP
+    const otp = generateOTP();
+    const hashedOTP = await hashOTP(otp);
+    const otpExpire = getOTPExpiration();
+
+    user.emailOTP = hashedOTP;
+    user.emailOTPExpire = otpExpire;
+    user.otpAttempts = 0;
+    user.lastOTPSentAt = new Date();
+
+    await user.save();
+
+    // Send OTP email
+    await sendOTPEmail(email, otp, user.name);
+
+    return res.status(200).json({
+      success: true,
+      message: 'New OTP sent to your email'
+    });
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to resend OTP'
+    });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { email } = req.body;
+
+    if (isJsonDB()) {
+      const user = global.jsonDB.users.find(u => u.email === email);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found with this email'
+        });
+      }
+
+      // Rate limiting check
+      if (!canRequestOTP(user.lastOTPSentAt)) {
+        return res.status(429).json({
+          success: false,
+          message: 'Please wait 60 seconds before requesting another OTP'
+        });
+      }
+
+      // Generate OTP for password reset
+      const otp = generateOTP();
+      const hashedOTP = await hashOTP(otp);
+      const otpExpire = getOTPExpiration();
+
+      user.emailOTP = hashedOTP;
+      user.emailOTPExpire = otpExpire.toISOString();
+      user.otpAttempts = 0;
+      user.lastOTPSentAt = new Date().toISOString();
+
+      global.jsonDB.save();
+
+      // Send password reset email
+      await sendPasswordResetEmail(email, otp, user.name);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password reset OTP sent to your email'
+      });
+    }
+
+    // MongoDB Mode
+    const user = await User.findOne({ email }).select('+emailOTP +emailOTPExpire +otpAttempts +lastOTPSentAt');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found with this email'
+      });
+    }
+
+    // Rate limiting check
+    if (!canRequestOTP(user.lastOTPSentAt)) {
+      return res.status(429).json({
+        success: false,
+        message: 'Please wait 60 seconds before requesting another OTP'
+      });
+    }
+
+    // Generate OTP for password reset
+    const otp = generateOTP();
+    const hashedOTP = await hashOTP(otp);
+    const otpExpire = getOTPExpiration();
+
+    user.emailOTP = hashedOTP;
+    user.emailOTPExpire = otpExpire;
+    user.otpAttempts = 0;
+    user.lastOTPSentAt = new Date();
+
+    await user.save();
+
+    // Send password reset email
+    await sendPasswordResetEmail(email, otp, user.name);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset OTP sent to your email'
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to send password reset OTP'
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { email, otp, newPassword } = req.body;
+
+    if (isJsonDB()) {
+      const user = global.jsonDB.users.find(u => u.email === email);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // Check if OTP has expired
+      if (isOTPExpired(user.emailOTPExpire)) {
+        return res.status(400).json({
+          success: false,
+          message: 'OTP has expired. Please request a new OTP.'
+        });
+      }
+
+      // Check attempt limit
+      if (!canAttemptOTP(user.otpAttempts)) {
+        return res.status(429).json({
+          success: false,
+          message: 'Maximum OTP attempts exceeded. Please request a new OTP.'
+        });
+      }
+
+      // Verify OTP
+      const isValid = await verifyOTPHash(otp, user.emailOTP);
+      user.otpAttempts = (user.otpAttempts || 0) + 1;
+
+      if (!isValid) {
+        global.jsonDB.save();
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid OTP. Please try again.'
+        });
+      }
+
+      // OTP is valid - update password and clear OTP fields
+      const bcrypt = require('bcryptjs');
+      user.password = await bcrypt.hash(newPassword, 12);
+      clearOTPFields(user);
+      global.jsonDB.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password reset successfully. You can now log in with your new password.'
+      });
+    }
+
+    // MongoDB Mode
+    const user = await User.findOne({ email }).select('+emailOTP +emailOTPExpire +otpAttempts +password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if OTP has expired
+    if (isOTPExpired(user.emailOTPExpire)) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired. Please request a new OTP.'
+      });
+    }
+
+    // Check attempt limit
+    if (!canAttemptOTP(user.otpAttempts)) {
+      return res.status(429).json({
+        success: false,
+        message: 'Maximum OTP attempts exceeded. Please request a new OTP.'
+      });
+    }
+
+    // Verify OTP
+    const isValid = await verifyOTPHash(otp, user.emailOTP);
+    user.otpAttempts += 1;
+
+    if (!isValid) {
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP. Please try again.'
+      });
+    }
+
+    // OTP is valid - update password and clear OTP fields
+    user.password = newPassword;
+    clearOTPFields(user);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successfully. You can now log in with your new password.'
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Password reset failed'
+    });
+  }
+};
+
 const changePassword = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -425,5 +935,9 @@ module.exports = {
   login,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
+  verifyOTP,
+  resendOTP,
+  forgotPassword,
+  resetPassword
 };

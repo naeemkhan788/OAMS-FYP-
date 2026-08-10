@@ -9,7 +9,6 @@ const authHeaders = () => {
 
 export default function Students() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedYear, setSelectedYear] = useState('all');
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +60,7 @@ export default function Students() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
+      const res = await fetch(`${API_BASE}/users`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -81,7 +80,7 @@ export default function Students() {
 
       const data = await res.json();
       if (data.success) {
-        setSuccess('Student added successfully!');
+        setSuccess('Student added successfully! Email verification required before login.');
         setNewStudent({
           firstName: '',
           lastName: '',
@@ -103,6 +102,23 @@ export default function Students() {
     }
   };
 
+  const handleSendVerificationEmail = async (studentId) => {
+    try {
+      const res = await fetch(`${API_BASE}/users/${studentId}/send-verification`, {
+        method: 'POST',
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccess('Verification OTP sent to student email');
+      } else {
+        setError(data.message || 'Failed to send verification email');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to send verification email');
+    }
+  };
+
   const mappedStudents = students.map((s) => ({
     id: s._id,
     name: s.name,
@@ -114,19 +130,18 @@ export default function Students() {
     gpa: s.profile?.gpa || 0,
     attendance: s.profile?.attendance || '0%',
     status: s.isActive ? 'active' : 'inactive',
+    isVerified: s.isVerified || false,
     joinDate: s.createdAt ? new Date(s.createdAt).toISOString().slice(0, 10) : ''
   }));
 
-  const departments = ['all', 'Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'English'];
   const years = ['all', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Final Year'];
 
   const filteredStudents = mappedStudents.filter((student) => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.studentId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = selectedDepartment === 'all' || student.department === selectedDepartment;
     const matchesYear = selectedYear === 'all' || student.year === selectedYear;
-    return matchesSearch && matchesDepartment && matchesYear;
+    return matchesSearch && matchesYear;
   });
 
   const getStatusColor = (status) => {
@@ -402,17 +417,6 @@ export default function Students() {
               />
             </div>
             <select
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept === 'all' ? 'All Departments' : dept}
-                </option>
-              ))}
-            </select>
-            <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -441,7 +445,9 @@ export default function Students() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GPA</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -459,7 +465,28 @@ export default function Students() {
                       {student.status}
                     </span>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {student.isVerified ? (
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Verified
+                      </span>
+                    ) : (
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        Not Verified
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{student.joinDate}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {!student.isVerified && (
+                      <button
+                        onClick={() => handleSendVerificationEmail(student.id)}
+                        className="text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        Send Verification
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -7,7 +7,11 @@ const {
   login,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
+  verifyOTP,
+  resendOTP,
+  forgotPassword,
+  resetPassword
 } = require('../controllers/authController');
 
 const router = express.Router();
@@ -72,8 +76,51 @@ const changePasswordValidation = [
     .withMessage('New password must be at least 6 characters long')
 ];
 
+const otpValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('OTP must be a 6-digit number')
+];
+
+const resendOTPValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail()
+];
+
+const forgotPasswordValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail()
+];
+
+const resetPasswordValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('OTP must be a 6-digit number'),
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters long')
+];
+
 router.post('/register', authLimiter, registerValidation, register);
 router.post('/login', authLimiter, loginValidation, login);
+router.post('/verify-otp', authLimiter, otpValidation, verifyOTP);
+router.post('/resend-otp', authLimiter, resendOTPValidation, resendOTP);
+router.post('/forgot-password', authLimiter, forgotPasswordValidation, forgotPassword);
+router.post('/reset-password', authLimiter, resetPasswordValidation, resetPassword);
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfileValidation, updateProfile);
 router.put('/change-password', protect, changePasswordValidation, changePassword);

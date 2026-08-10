@@ -17,15 +17,6 @@
       "createdAt": "2026-04-25T06:49:55.430Z"
     },
     {
-      "_id": "fdcd372e-2b4c-4c1d-b78f-5c3e39d69646",
-      "name": "Bilal khan",
-      "email": "bilalkhan123@gmail.com",
-      "password": "$2a$10$XybV3IbN3uwYWtZ8pjMqw.V6D7F/s3hj1wKPSJFdAOUnRw2S7XSRO",
-      "role": "admin",
-      "createdAt": "2026-04-25T07:03:42.720Z",
-      "lastLogin": "2026-04-25T07:04:09.519Z"
-    },
-    {
       "_id": "de82e1cc-846d-4533-bb4d-26aefb7b4573",
       "name": "bilalali",
       "email": "bilalkhan003@gmail.com",
@@ -42,32 +33,12 @@
       "createdAt": "2026-04-25T07:06:57.470Z"
     },
     {
-      "_id": "ee3a73a2-6296-4218-88a6-33e3e302c93a",
-      "name": "Azan khan",
-      "email": "azankhan36@gmail.com",
-      "password": "$2a$10$61DRP5.VlTMw7q7QzOtE4u/.dK3ImIENpjLWxMtUxUypJ01bHiGMm",
-      "role": "admin",
-      "createdAt": "2026-04-25T07:13:28.318Z",
-      "lastLogin": "2026-04-25T07:13:44.726Z"
-    },
-    {
       "_id": "b44349c2-0a83-4b39-a585-9203e063f2d1",
       "name": "Ahmad Ali",
       "email": "ahmadali66@gamil.com",
       "password": "$2a$10$3EnzHr/6Ex4gJLdPSXmY1ec/TQYEC/FNoBYloYjgkIHZFnbk7lukK",
       "role": "teacher",
       "createdAt": "2026-04-25T07:14:43.009Z"
-    },
-    {
-      "_id": "9c54b9f6-1dbd-4716-924c-7b1aeb295324",
-      "name": "ihsan khan",
-      "email": "ihsankhan12@gmail.com",
-      "password": "$2a$10$O2HwdGFVTBfW2HsDdbWnMus3kAMTYKoEZGHji8MoHSg5LmZx/TYOa",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-25T07:22:33.892Z",
-      "lastLogin": "2026-04-25T07:22:48.705Z"
     },
     {
       "_id": "8b37b8f3-71ab-4973-81ba-4e2e8c2ced0e",
@@ -78,92 +49,6 @@
       "isActive": true,
       "profile": {},
       "createdAt": "2026-04-25T07:23:37.896Z"
-    },
-    {
-      "_id": "f129be43-12e4-443f-ae0f-587b052a210a",
-      "name": "Asif khan",
-      "email": "asifkhan1234@gmail.com",
-      "password": "$2a$10$eiRJuks3ROcEt6jDgnprsOgs.6Zb2AXdT1E/lMm0ESyCsB78x95Ma",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-25T07:46:49.913Z"
-    },
-    {
-      "_id": "41c69134-e614-43a0-97a2-31afbaf9688e",
-      "name": "Naveed khan",
-      "email": "naveedkhan12@gmail.com",
-      "password": "$2a$10$yyyZMGwyoUKs5k.qudSm9OyFQEvIaQR3qvUXtqoDTMq2PVjP3BuS.",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T04:56:29.650Z",
-      "lastLogin": "2026-04-26T04:56:46.577Z"
-    },
-    {
-      "_id": "d2890f93-1e16-4ad7-8ff3-5730b823671b",
-      "name": "Naveed khan",
-      "email": "naveedkhan000@gamil.com",
-      "password": "$2a$10$jFG8jKigxR2XdYXXeW6SnOmfxd2gyFiwOFGvTCgr7S9.zQEhzhCW.",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T05:04:37.371Z",
-      "lastLogin": "2026-04-26T05:04:50.724Z"
-    },
-    {
-      "_id": "1d3c8123-3883-41da-9f30-cc689b53a4ea",
-      "name": "Naveed khan",
-      "email": "naveedkhan99@gmail.com",
-      "password": "$2a$10$/f0RfnZYiqdaHRqMBVeVH.VzgAtmxyhLawBknZTRjmK2XJawhTHAu",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T05:09:22.030Z",
-      "lastLogin": "2026-04-26T05:09:37.522Z"
-    },
-    {
-      "_id": "fee441e3-e5b6-4c78-95cb-330a9d56089a",
-      "name": "Naveed khan",
-      "email": "naveedkhan123@gmail.com",
-      "password": "$2a$10$eHSe1Hjbye6.8n1yngw6r.jJG6VQBWlPPVlgxABNkAS2Pixm8DCcq",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T05:17:56.062Z",
-      "lastLogin": "2026-04-26T05:18:12.054Z"
-    },
-    {
-      "_id": "600d481e-ec8f-4aad-a2ee-e7bc04699f9a",
-      "name": "Naveed khan",
-      "email": "naveedkhan111@gmail.com",
-      "password": "$2a$10$ENy2IL24EfuhL2POSgcW7O8WqmOr7IJEt/bNJKykamLSw7GBDc8dm",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T05:20:23.097Z"
-    },
-    {
-      "_id": "6a839530-03ad-4e79-b4d3-315a33f082ed",
-      "name": "Bilal khan",
-      "email": "bilalkhan88@gmail.com",
-      "password": "$2a$10$8.MixFivlgCfYJ7PnluIZuHD6op0y92AN0XuiV.T1tkwh/SfnsAaW",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T05:24:00.093Z",
-      "lastLogin": "2026-04-26T05:24:22.740Z"
-    },
-    {
-      "_id": "f44bfe6a-c01d-4bfb-b3e2-51facc7214e9",
-      "name": "Naveed khan",
-      "email": "naveedkhan12@gamil.com",
-      "password": "$2a$10$Maq.sHRBypFiwIom1QILjuPvKYCucsJ5SeHxg5UOzuHbpvCnbmayS",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T05:35:37.307Z",
-      "lastLogin": "2026-04-26T05:35:58.956Z"
     },
     {
       "_id": "926761cc-8114-4b85-80a5-3830af038ed1",
@@ -188,17 +73,6 @@
       "lastLogin": "2026-04-26T06:03:18.686Z"
     },
     {
-      "_id": "7081449a-cf11-4e14-b6fd-4ce8585c3704",
-      "name": "Atif khan",
-      "email": "atifkhan12@gamil.com",
-      "password": "$2a$10$sWH7zonCqjy0oqbuK8wnZOm/ioM0ZhiUbFcdaasyFcTfG8iePwirO",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T06:09:23.560Z",
-      "lastLogin": "2026-04-26T06:09:38.838Z"
-    },
-    {
       "_id": "0b7a7a43-c172-4518-a0c9-00aa59872be9",
       "name": "Bilalkahn",
       "email": "bilalkhan0@gmail.com",
@@ -218,27 +92,6 @@
       "profile": {},
       "createdAt": "2026-04-26T06:11:46.614Z",
       "lastLogin": "2026-04-26T06:12:04.274Z"
-    },
-    {
-      "_id": "8a0296bd-b98e-41ed-830c-75bda5c7d483",
-      "name": "Atif khan",
-      "email": "atifkhan33@gamil.com",
-      "password": "$2a$10$uKA/tiu7fxSheXwzde08QeAGTPiwDI6qZ1QFo5P4l9vJKzjTmbIGK",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T06:35:54.647Z"
-    },
-    {
-      "_id": "6b4159f0-eb2b-4a63-90eb-4629a1e2bcc5",
-      "name": "Atif khan",
-      "email": "atifkhan123@gamil.com",
-      "password": "$2a$10$I8.Gk66RcrP18hJMSouVj.Dvb13L1Sz/KuuIIe/aCJ6VSUny.nDym",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T06:36:44.275Z",
-      "lastLogin": "2026-04-26T06:37:00.149Z"
     },
     {
       "_id": "170e7752-24a2-4fc1-ad10-0ebb72f75a4b",
@@ -338,17 +191,6 @@
       "createdAt": "2026-04-26T07:10:35.708Z"
     },
     {
-      "_id": "c6a06934-3308-4137-a937-52b3dc5e7a43",
-      "name": "asim khan",
-      "email": "asimkhan2@gamil.com",
-      "password": "$2a$10$8vE3nlwDQMepqT2pGcUmT.ladmKx4YrwrrRtGLCwdG/rEhc/gAC.a",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-26T07:22:22.198Z",
-      "lastLogin": "2026-04-26T07:22:35.527Z"
-    },
-    {
       "_id": "8b325428-fb84-4538-acc4-f5825b6bd271",
       "name": "yaseen khan",
       "email": "yaseenkhan12@gamil.com",
@@ -358,27 +200,6 @@
       "profile": {},
       "createdAt": "2026-04-26T07:27:55.168Z",
       "lastLogin": "2026-04-26T07:28:11.696Z"
-    },
-    {
-      "_id": "23fb82bd-b21a-4232-8e6b-21a15d4dbfed",
-      "name": "Naveed khan",
-      "email": "naveedkhan00@gmail.com",
-      "password": "$2a$10$UjB3FYFaPd9pAgCxD2Mv4.W47djnSSY/lRxT7u4pjSD/lSpr689Vm",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-27T14:50:39.546Z"
-    },
-    {
-      "_id": "80e521f7-b3f1-41e5-bd62-ea7b59418287",
-      "name": "Naveed khan",
-      "email": "naveedkhan120@gamil.com",
-      "password": "$2a$10$virmbzvDRhMgwtdQ0WGQKO151Y23o6hDBuReA3W3lJLT2lwFewV9G",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-27T14:51:36.429Z",
-      "lastLogin": "2026-04-27T14:51:55.118Z"
     },
     {
       "_id": "09ad992b-c495-4ffc-81e8-b4a74ef4ec14",
@@ -391,94 +212,6 @@
       "createdAt": "2026-04-27T14:52:41.699Z"
     },
     {
-      "_id": "3779293d-1441-4b6a-82ff-9ecc94bcee1c",
-      "name": "Naveed khan",
-      "email": "naveedkhan66@gamil.com",
-      "password": "$2a$10$Fh6vFNUqPy7MdomvOBKOJegJSeiQ/ep.Qb7THHkL.uSzbDanRGeiq",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-27T15:03:15.990Z",
-      "lastLogin": "2026-04-27T15:03:34.886Z"
-    },
-    {
-      "_id": "30361189-99da-4469-845e-2466405684d2",
-      "name": "Ihsan khan",
-      "email": "ihsankhan890@gamil.com",
-      "password": "$2a$10$RFmffmnHIcEvvz2R1kHs1uA/yn6ry2NTYhOLAuEnV44euGdLut3b6",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-27T15:15:21.844Z",
-      "lastLogin": "2026-04-27T15:15:34.910Z"
-    },
-    {
-      "_id": "c4af7c3b-cea6-40d4-9480-25ecd6dea5aa",
-      "name": "jawad khan",
-      "email": "jawadkhan1@gmail.com",
-      "password": "$2a$10$LRNBZxdDOvMkK34raPr3uey7gZwgAI7qWyvGp1iOGj/MFiCzksKwW",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-29T11:42:42.313Z",
-      "lastLogin": "2026-04-29T11:42:57.741Z"
-    },
-    {
-      "_id": "5d330b92-219d-440f-a9d1-c7f01d873a12",
-      "name": "Asif Ali",
-      "email": "asifali89@gmail.com",
-      "password": "$2a$10$WQYEqSO.EO6dRzNlAHppZu9ygnAmZW4zP6mINeaq5ghMX3sQ6IPUm",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-29T15:06:23.938Z",
-      "lastLogin": "2026-04-29T15:06:40.246Z"
-    },
-    {
-      "_id": "37508a7c-b35b-40dd-a508-e4cc0333cf5e",
-      "name": "Admin khan",
-      "email": "admin@oams.com",
-      "password": "$2a$10$.6K/DN3Gg2PDPwPcc6ooq.BGgACyRJ8WZ6BzpU9PTxQMs0SfkStFK",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-29T15:18:04.612Z",
-      "lastLogin": "2026-06-03T05:14:53.901Z",
-      "id": "37508a7c-b35b-40dd-a508-e4cc0333cf5e"
-    },
-    {
-      "_id": "f91a4d1b-a76e-4a68-9122-969bb63c0d2e",
-      "name": "Naveed khan",
-      "email": "naveedkhan1234@gmail.com",
-      "password": "$2a$10$x3.Tdp7E4PyEJA5w5JxKzeBWZmch2IEqmj3qWI7EbisyaCqEqHx1q",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-29T15:34:54.674Z",
-      "lastLogin": "2026-04-29T15:35:10.189Z"
-    },
-    {
-      "_id": "0dec537e-1b02-4403-8d87-67782f1f6a66",
-      "name": "Naveed khan",
-      "email": "naveedkhan120@gmail.com",
-      "password": "$2a$10$aA67CAQPw1ekt0AbwQpqdevXIaSP0GvQmN8RaKRShKr6Q9ZMny.02",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-29T15:36:55.380Z"
-    },
-    {
-      "_id": "dcd68797-8c8d-46fa-bf99-b5bbde53a892",
-      "name": "Asif khan",
-      "email": "asifkhan11@gmail.com",
-      "password": "$2a$10$QptTH7TAzy42UlE2O8AQa.Wa4zB1H//KLHuTww.1/DWJcT1b0f1rS",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-29T15:38:17.465Z",
-      "lastLogin": "2026-04-29T15:38:36.509Z"
-    },
-    {
       "_id": "4c1bba8e-77e3-4ede-bccf-5f05f0beff61",
       "name": "Nvaeedkhan",
       "email": "naveedkhan000@gmail.com",
@@ -487,29 +220,6 @@
       "isActive": true,
       "profile": {},
       "createdAt": "2026-04-29T15:39:10.437Z"
-    },
-    {
-      "_id": "4f0200f7-9c32-47db-b6c0-c0a2746fe7a3",
-      "name": "Hammad khan",
-      "email": "hammadkhan78@gmail.com",
-      "password": "$2a$10$FInwOyZU9gPPrMGWRMIUMO36ju4t3XLtNfrsTef2bPF2he/YolsJW",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-04-29T15:52:59.333Z",
-      "lastLogin": "2026-04-29T15:53:14.380Z"
-    },
-    {
-      "_id": "0cf09bf2-59f3-42b4-af6b-126e1ecda7c8",
-      "name": "Bilal khan",
-      "email": "bilalkhan044@gmail.com",
-      "password": "$2a$10$Udzveq7wLdCwJz.l8JSwUe1EdByljD070Atni88k4ALoBAtjAwLIK",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-05-02T06:14:19.329Z",
-      "lastLogin": "2026-05-17T15:09:42.046Z",
-      "id": "0cf09bf2-59f3-42b4-af6b-126e1ecda7c8"
     },
     {
       "_id": "1bbeafa5-7926-4d51-b604-e807b12237b3",
@@ -565,18 +275,6 @@
       "id": "f0346f75-2aed-42df-bfcf-531326185192"
     },
     {
-      "_id": "b58939a3-a786-4a89-a3b7-26b12d0c4d42",
-      "name": "Naveed khan",
-      "email": "naveedali120@gmail.com",
-      "password": "$2a$10$SReedvLGHvMGInQFcV6ixe04WK6rrB1VvK59JErwBsTvIClRmQNvy",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-05-06T04:17:28.837Z",
-      "lastLogin": "2026-05-06T04:17:46.529Z",
-      "id": "b58939a3-a786-4a89-a3b7-26b12d0c4d42"
-    },
-    {
       "_id": "c7866141-96de-4ee7-81d6-995d9171bb5c",
       "name": "khan",
       "email": "khan000@gmail.com",
@@ -596,18 +294,6 @@
       "profile": {},
       "createdAt": "2026-05-06T04:37:23.852Z",
       "lastLogin": "2026-05-06T04:37:41.223Z"
-    },
-    {
-      "_id": "cfaf77d2-ed46-4953-ae88-099238130338",
-      "name": "Asif Khan",
-      "email": "asif123@gmail.com",
-      "password": "$2a$10$LpndOqLm5uf1kO609riKPekjTjACEZCVsZkuIzcGaetM7Up.c4Xg2",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-05-06T04:48:02.221Z",
-      "lastLogin": "2026-05-06T04:48:17.237Z",
-      "id": "cfaf77d2-ed46-4953-ae88-099238130338"
     },
     {
       "_id": "1dd16c79-0211-4af4-987a-f10f9eea4754",
@@ -642,18 +328,6 @@
       "lastLogin": "2026-05-07T03:52:49.584Z"
     },
     {
-      "_id": "328e1d52-5fa9-4fdc-9928-0304459d900a",
-      "name": "Ali Khan",
-      "email": "alikhan90@gmail.com",
-      "password": "$2a$10$2FjclPMS46ICoGXLIwo5reFOnGgMWCslNRq9bKwF06tl6g.fDkEwK",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-05-07T04:10:06.648Z",
-      "lastLogin": "2026-05-07T04:10:21.557Z",
-      "id": "328e1d52-5fa9-4fdc-9928-0304459d900a"
-    },
-    {
       "_id": "ce3d25c5-fbc8-4574-9307-3a7c67f457fc",
       "name": "Bilal khan",
       "email": "bilalali123@gmail.com",
@@ -664,18 +338,6 @@
       "createdAt": "2026-05-07T04:13:21.656Z",
       "lastLogin": "2026-05-07T04:13:38.700Z",
       "id": "ce3d25c5-fbc8-4574-9307-3a7c67f457fc"
-    },
-    {
-      "_id": "569374a7-5ba7-469e-bffc-694032c74ef9",
-      "name": "Atif Khan khan",
-      "email": "atifkhan22@gmail.com",
-      "password": "$2a$10$7UmyVFK6SwCtjKBRfHm1Kuq0.snoJEFhNzevu8rToEgzK9yDvU.Y.",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-05-07T04:18:49.005Z",
-      "lastLogin": "2026-05-07T04:19:05.553Z",
-      "id": "569374a7-5ba7-469e-bffc-694032c74ef9"
     },
     {
       "_id": "a94a9ff4-0539-4269-847c-3b010e8060d5",
@@ -713,18 +375,6 @@
       "id": "92bd58cf-a2d4-40e6-b11f-eff488922adf"
     },
     {
-      "_id": "acaecc6d-d775-4e15-bf59-3be0d999a320",
-      "name": "Bilal ali",
-      "email": "bilalali22@gmail.com",
-      "password": "$2a$10$0k2pI2K74wutN8AmxlNgkusfQHUXknJ50MH1JcoWKDqE0LRNfRkTa",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-05-20T07:14:22.600Z",
-      "lastLogin": "2026-05-20T07:18:14.849Z",
-      "id": "acaecc6d-d775-4e15-bf59-3be0d999a320"
-    },
-    {
       "_id": "b07ea629-837e-491c-99d0-899bba6dc11a",
       "name": "ahmad Ali",
       "email": "ahmadali11@gmail.com",
@@ -735,18 +385,6 @@
       "createdAt": "2026-05-20T07:20:42.924Z",
       "lastLogin": "2026-05-21T05:17:03.097Z",
       "id": "b07ea629-837e-491c-99d0-899bba6dc11a"
-    },
-    {
-      "_id": "98196437-92fc-4912-973b-b39108fa5522",
-      "name": "Naveed khan",
-      "email": "naveedkhan11@gmail.com",
-      "password": "$2a$10$Gid846XsC.Yg9vrt77o3BOZO0XRgfBVhZTKcqa8B0RA9B2oe7tuqm",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-05-21T05:17:45.144Z",
-      "lastLogin": "2026-05-21T05:17:55.622Z",
-      "id": "98196437-92fc-4912-973b-b39108fa5522"
     },
     {
       "_id": "d2aeb0d3-99eb-476f-ae61-c65bcce0ac3d",
@@ -772,18 +410,6 @@
       "lastLogin": "2026-05-31T20:02:08.728Z"
     },
     {
-      "_id": "b54dbb5c-707c-488f-8f04-ee3597ee9667",
-      "name": "Bilal Khan",
-      "email": "bilalali11@gmail.com",
-      "password": "$2a$10$UwKkF6HrO3QrxbQHXUap/eqn5/4E76NVI4PDtmTNcJMyNpLnWvJQu",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-06-02T15:19:48.280Z",
-      "lastLogin": "2026-06-02T15:20:12.882Z",
-      "id": "b54dbb5c-707c-488f-8f04-ee3597ee9667"
-    },
-    {
       "_id": "9c0d9822-fe46-422c-b4f7-7328bbac8890",
       "name": "Atifkhan",
       "email": "atifkhan12@gmail.com",
@@ -806,30 +432,6 @@
       "id": "7efc7d42-8abf-4714-9f99-a167f9168449"
     },
     {
-      "_id": "54291b84-69c8-4bf2-84ca-8396d7f876f5",
-      "name": "xyz kHAN",
-      "email": "xyz@gmail.com",
-      "password": "$2a$10$kBlgyNW/DEI/AaKeDT1Cnu1OWMEdBkQMJLtL1npvSZI4srBK3GWqq",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-06-02T15:38:33.820Z",
-      "lastLogin": "2026-06-02T15:38:48.299Z",
-      "id": "54291b84-69c8-4bf2-84ca-8396d7f876f5"
-    },
-    {
-      "_id": "0df0d572-0a21-4d75-b474-d65928555fb3",
-      "name": "ABC bc",
-      "email": "admin@abc.com",
-      "password": "$2a$10$uiMhDK.CM94rAWP4QMW4se5sptPerT09EieyNzxQFuapHkp6/2L3e",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-06-03T05:11:01.971Z",
-      "lastLogin": "2026-06-03T05:11:24.753Z",
-      "id": "0df0d572-0a21-4d75-b474-d65928555fb3"
-    },
-    {
       "_id": "540dcfba-4c11-405a-9574-035b8b6ec739",
       "name": "az zz",
       "email": "sayyadjan91@gamil.com",
@@ -838,18 +440,6 @@
       "isActive": true,
       "profile": {},
       "createdAt": "2026-06-03T05:17:41.271Z"
-    },
-    {
-      "_id": "692682df-6c26-421a-a9df-3df1adae595c",
-      "name": "Atif Khan khan",
-      "email": "atifkhan21@gmail.com",
-      "password": "$2a$10$E.8O3EFW1suywJQnTbVgBONyiCfe0nMwc74MSUr644nAid3ZAV4iy",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-06-03T05:19:16.223Z",
-      "lastLogin": "2026-06-03T05:19:29.399Z",
-      "id": "692682df-6c26-421a-a9df-3df1adae595c"
     },
     {
       "_id": "74d7c5ce-aa5c-4995-a4ef-42962a9d6ff6",
@@ -876,17 +466,6 @@
       "id": "ac81de9c-08b2-4878-b227-ce8ae4bf061f"
     },
     {
-      "_id": "d744e224-9e3b-4709-be2e-d4d85a43dbb7",
-      "name": "Bilal khan",
-      "email": "bilalkhan34@gmail.com",
-      "password": "$2a$10$qlpu6Jz/PrRau/6yu3D9yOS7zRw7v1zUuANgt5P7AAqe6SoBT/BE.",
-      "role": "admin",
-      "isActive": true,
-      "profile": {},
-      "createdAt": "2026-06-06T10:27:01.342Z",
-      "lastLogin": "2026-06-06T10:27:12.768Z"
-    },
-    {
       "_id": "b89aac1d-ca78-4f4b-ac64-6474cfeeed76",
       "name": "Haris sir",
       "email": "haris12@gmail.com",
@@ -897,6 +476,26 @@
       "createdAt": "2026-06-23T01:12:33.241Z",
       "lastLogin": "2026-06-23T01:36:45.435Z",
       "id": "b89aac1d-ca78-4f4b-ac64-6474cfeeed76"
+    },
+    {
+      "_id": "ADMIN-1784273122759",
+      "name": "System Admin",
+      "firstName": "System",
+      "lastName": "Admin",
+      "email": "admin@oams.com",
+      "password": "$2a$12$RbNXg0cDv4ybQDe3eJIcGOwmM3IyESZae9GCMwEyrf1/t0NglnffK",
+      "role": "admin",
+      "status": "approved",
+      "isVerified": true,
+      "isActive": true,
+      "profile": {
+        "phone": "",
+        "address": "",
+        "department": "Administration",
+        "specialization": "System Administration"
+      },
+      "createdAt": "2026-07-17T07:25:22.759Z",
+      "updatedAt": "2026-07-17T07:25:22.760Z"
     }
   ],
   "classes": [
@@ -1572,81 +1171,6 @@
   ],
   "marks": [],
   "notices": [],
-  "feerecords": [
-    {
-      "_id": "FEE-6758043",
-      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
-      "semester": "Semester 3",
-      "type": "Tuition Fee",
-      "amount": 2500,
-      "dueDate": "2026-04-18T12:28:06.523Z",
-      "status": "paid",
-      "description": "Semester tuition fees",
-      "paymentDate": "2026-04-23T12:28:06.523Z",
-      "paymentMethod": "Online Banking",
-      "transactionId": "TXN-128921",
-      "createdAt": "2026-05-18T12:28:06.523Z"
-    },
-    {
-      "_id": "FEE-9167961",
-      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
-      "semester": "Semester 3",
-      "type": "Library Fee",
-      "amount": 150,
-      "dueDate": "2026-04-18T12:28:06.523Z",
-      "status": "paid",
-      "description": "Library access and resources",
-      "paymentDate": "2026-04-23T12:28:06.523Z",
-      "paymentMethod": "Credit Card",
-      "transactionId": "TXN-604901",
-      "createdAt": "2026-05-18T12:28:06.523Z"
-    },
-    {
-      "_id": "FEE-1755486",
-      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
-      "semester": "Semester 3",
-      "type": "Lab Fee",
-      "amount": 350,
-      "dueDate": "2026-05-03T12:28:06.523Z",
-      "status": "paid",
-      "description": "Science lab equipment and materials",
-      "paymentDate": "2026-05-08T12:28:06.523Z",
-      "paymentMethod": "Online Banking",
-      "transactionId": "TXN-758634",
-      "createdAt": "2026-05-18T12:28:06.523Z"
-    },
-    {
-      "_id": "FEE-4989447",
-      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
-      "semester": "Semester 3",
-      "type": "Sports Fee",
-      "amount": 120,
-      "dueDate": "2026-06-02T12:28:06.523Z",
-      "status": "pending",
-      "description": "Sports facilities and annual tournament fee",
-      "createdAt": "2026-05-18T12:28:06.523Z"
-    },
-    {
-      "_id": "FEE-4684750",
-      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
-      "semester": "Semester 3",
-      "type": "Examination Fee",
-      "amount": 300,
-      "dueDate": "2026-07-02T12:28:06.523Z",
-      "status": "pending",
-      "description": "Semester final examination processing fee",
-      "createdAt": "2026-05-18T12:28:06.523Z"
-    },
-    {
-      "_id": "FEE-2622103",
-      "student": "f055c21f-c52e-4d3b-82f2-126896166eaf",
-      "semester": "Semester 3",
-      "type": "Hostel Fee",
-      "amount": 850,
-      "dueDate": "2026-06-17T12:28:06.523Z",
-      "status": "pending",
-      "description": "Monthly accommodation and maintenance",
-      "createdAt": "2026-05-18T12:28:06.523Z"
-    }
-  ]
+  "reports": [],
+  "leaves": []
 }

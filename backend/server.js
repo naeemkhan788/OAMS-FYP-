@@ -8,6 +8,7 @@ const morgan = require('morgan');
 
 const { apiLimiter } = require('./middleware/rateLimiter');
 const connectDB = require('./config/database');
+const { initializeSocket } = require('./socket');
 
 const authRoutes = require('./routes/auth');
 const attendanceRoutes = require('./routes/attendance');
@@ -17,10 +18,15 @@ const classRoutes = require('./routes/classes');
 const userRoutes = require('./routes/users');
 const tableRoutes = require('./routes/tables');
 const noticeRoutes = require('./routes/notices');
-const feeRoutes = require('./routes/fees');
 const syncRoutes = require('./routes/sync');
 const reportRoutes = require('./routes/reports');
 const leaveRoutes = require('./routes/leaves');
+const adminRoutes = require('./routes/admin');
+const notificationRoutes = require('./routes/notifications');
+const teacherAttendanceRoutes = require('./routes/teacherAttendance');
+const analyticsRoutes = require('./routes/analytics');
+const scheduledReportsRoutes = require('./routes/scheduledReports');
+const contactRoutes = require('./routes/contact');
 
 const app = express();
 
@@ -65,10 +71,15 @@ app.use('/api/classes', classRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/notices', noticeRoutes);
-app.use('/api/fees', feeRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/leaves', leaveRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/teacher-attendance', teacherAttendanceRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/scheduled-reports', scheduledReportsRoutes);
+app.use('/api/contact', contactRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -170,6 +181,9 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
+
+// Initialize Socket.IO
+initializeSocket(server);
 
 process.on('unhandledRejection', (err, promise) => {
   console.error(`Unhandled Promise Rejection: ${err}`);

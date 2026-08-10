@@ -1,6 +1,5 @@
 const Class = require('../models/Class');
 const User = require('../models/User');
-const Attendance = require('../models/Attendance');
 const Marks = require('../models/Marks');
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
@@ -318,6 +317,7 @@ const assignStudentToClass = async (req, res) => {
         global.jsonDB.users[userIndex].class = classId;
       }
       global.jsonDB.save();
+
       return res.status(200).json({ success: true, message: 'Student assigned to class successfully' });
     }
     const classDoc = await Class.findById(classId);
@@ -330,6 +330,7 @@ const assignStudentToClass = async (req, res) => {
       await classDoc.save();
     }
     await User.findByIdAndUpdate(studentId, { class: classId });
+
     res.status(200).json({ success: true, message: 'Student assigned to class successfully' });
   } catch (error) {
     console.error('Assign student error:', error);
@@ -410,6 +411,7 @@ const assignTeacher = async (req, res) => {
       console.log('Class after assignment:', global.jsonDB.classes[classIndex]);
       global.jsonDB.save();
       console.log('All classes after assignment:', global.jsonDB.classes.map(c => ({ _id: c._id, name: c.name, teacher: c.teacher })));
+
       return res.status(200).json({ success: true, message: 'Teacher assigned to class successfully' });
     }
     const classDoc = await Class.findById(req.params.id);
@@ -418,6 +420,7 @@ const assignTeacher = async (req, res) => {
     }
     classDoc.teacher = teacher;
     await classDoc.save();
+
     res.status(200).json({ success: true, message: 'Teacher assigned to class successfully' });
   } catch (error) {
     console.error('Assign teacher error:', error);

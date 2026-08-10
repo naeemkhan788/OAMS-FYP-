@@ -10,16 +10,15 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import SignIn from './pages/auth/SignIn';
 import SignUp from './pages/auth/SignUp';
+import VerifyOTP from './pages/auth/VerifyOTP';
 import StudentDashboard from './pages/dashboard/StudentDashboard';
 import Attendance from './pages/dashboard/student/Attendance';
 import Marks from './pages/dashboard/student/Marks';
 import Progress from './pages/dashboard/student/Progress';
-import Fees from './pages/dashboard/student/Fees';
 import Leave from './pages/dashboard/student/Leave';
 import TeacherDashboard from './pages/dashboard/TeacherDashboard';
 import TeacherAttendance from './pages/dashboard/teacher/Attendance';
 import TeacherMarks from './pages/dashboard/teacher/Marks';
-import Reviews from './pages/dashboard/teacher/Reviews';
 import Classes from './pages/dashboard/teacher/Classes';
 import TeacherStudents from './pages/dashboard/teacher/Students';
 import LeaveManagement from './pages/dashboard/teacher/LeaveManagement';
@@ -29,7 +28,7 @@ import AdminStudents from './pages/dashboard/admin/Students';
 import AdminClasses from './pages/dashboard/admin/Classes';
 import AdminReports from './pages/dashboard/admin/Reports';
 import AdminSettings from './pages/dashboard/admin/Settings';
-import AdminFees from './pages/dashboard/admin/Fees';
+import CreateNotice from './pages/dashboard/admin/CreateNotice';
 
 function App() {
   return (
@@ -41,6 +40,7 @@ function App() {
           <Route path="contact" element={<Contact />} />
           <Route path="signin" element={<SignIn />} />
           <Route path="signup" element={<SignUp />} />
+          <Route path="verify-otp" element={<VerifyOTP />} />
         </Route>
         <Route 
           path="/student/*" 
@@ -54,7 +54,6 @@ function App() {
           <Route path="attendance" element={<Attendance />} />
           <Route path="marks" element={<Marks />} />
           <Route path="progress" element={<Progress />} />
-          <Route path="fees" element={<Fees />} />
           <Route path="leave" element={<Leave />} />
         </Route>
         <Route 
@@ -69,7 +68,6 @@ function App() {
           <Route path="attendance" element={<TeacherAttendance />} />
           <Route path="marks" element={<TeacherMarks />} />
           <Route path="students" element={<TeacherStudents />} />
-          <Route path="reviews" element={<Reviews />} />
           <Route path="classes" element={<Classes />} />
           <Route path="leave-management" element={<LeaveManagement />} />
         </Route>
@@ -85,9 +83,9 @@ function App() {
           <Route path="teachers" element={<AdminTeachers />} />
           <Route path="students" element={<AdminStudents />} />
           <Route path="classes" element={<AdminClasses />} />
-          <Route path="fees" element={<AdminFees />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="create-notice" element={<CreateNotice />} />
         </Route>
       </Routes>
       <OfflineIndicator />

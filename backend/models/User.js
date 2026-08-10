@@ -77,7 +77,43 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailOTP: {
+    type: String,
+    select: false
+  },
+  emailOTPExpire: {
+    type: Date,
+    select: false
+  },
+  otpAttempts: {
+    type: Number,
+    default: 0,
+    select: false
+  },
+  lastOTPSentAt: {
+    type: Date,
+    select: false
+  },
   lastLogin: Date,
+  adminNotes: [{
+    note: {
+      type: String,
+      required: true
+    },
+    addedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   createdAt: {
     type: Date,
     default: Date.now

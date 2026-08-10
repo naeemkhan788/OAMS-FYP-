@@ -2,15 +2,7 @@ import { useState, useEffect } from 'react';
 import { getClasses, getUsers } from '../../../utils/api';
 
 const DEPARTMENTS = [
-  'Computer Science',
-  'Electrical Engineering',
-  'Mechanical Engineering',
-  'Civil Engineering',
-  'Business Administration',
-  'Social Sciences',
-  'English',
-  'Mathematics',
-  'Other'
+  'Computer Science'
 ];
 
 const API_BASE = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}`;
@@ -21,7 +13,6 @@ const authHeaders = () => {
 
 export default function Classes() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +25,7 @@ export default function Classes() {
   const [newClass, setNewClass] = useState({
     name: '',
     code: '',
-    semester: '1',
+    semester: '1st',
     department: 'Computer Science',
     section: 'A',
     room: '',
@@ -88,13 +79,14 @@ export default function Classes() {
     }
 
     try {
+      console.log('Creating class with semester:', newClass.semester, typeof newClass.semester);
       const res = await fetch(`${API_BASE}/classes`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
           name: newClass.name,
           code: newClass.code.toUpperCase(),
-          semester: parseInt(newClass.semester),
+          semester: newClass.semester,
           department: newClass.department,
           section: newClass.section,
           teacher: newClass.teacher,
@@ -115,7 +107,7 @@ export default function Classes() {
         setNewClass({
           name: '',
           code: '',
-          semester: '1',
+          semester: '1st',
           department: 'Computer Science',
           section: 'A',
           room: '',
@@ -157,16 +149,14 @@ export default function Classes() {
     endDate: c.endDate || ''
   }));
 
-  const departments = ['all', 'Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'English'];
   const statuses = ['all', 'active', 'completed', 'upcoming', 'cancelled'];
 
   const filteredClasses = mappedClasses.filter((class_) => {
     const matchesSearch = class_.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       class_.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       class_.teacher.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = selectedDepartment === 'all' || class_.department === selectedDepartment;
     const matchesStatus = selectedStatus === 'all' || class_.status === selectedStatus;
-    return matchesSearch && matchesDepartment && matchesStatus;
+    return matchesSearch && matchesStatus;
   });
 
   const stats = {
@@ -307,16 +297,21 @@ export default function Classes() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Semester (1-8)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
                 <select
                   value={newClass.semester}
                   onChange={(e) => setNewClass({ ...newClass, semester: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   required
                 >
-                  {[1,2,3,4,5,6,7,8].map(s => (
-                    <option key={s} value={s}>Semester {s}</option>
-                  ))}
+                  <option value="1st">1st Semester</option>
+                  <option value="2nd">2nd Semester</option>
+                  <option value="3rd">3rd Semester</option>
+                  <option value="4th">4th Semester</option>
+                  <option value="5th">5th Semester</option>
+                  <option value="6th">6th Semester</option>
+                  <option value="7th">7th Semester</option>
+                  <option value="8th">8th Semester</option>
                 </select>
               </div>
               <div>
@@ -449,17 +444,6 @@ export default function Classes() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg"
             />
-            <select
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
-            >
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept === 'all' ? 'All Departments' : dept}
-                </option>
-              ))}
-            </select>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}

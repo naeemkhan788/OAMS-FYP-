@@ -21,7 +21,6 @@ const TABLES = {
   MARKS: 'marks.json',
   TIMETABLE: 'timetable.json',
   ANNOUNCEMENTS: 'announcements.json',
-  FEE_RECORDS: 'feeRecords.json',
   LEAVE_APPLICATIONS: 'leaveApplications.json'
 };
 
@@ -174,7 +173,6 @@ const initializeAllTables = () => {
         phone: '+92-302-3456789',
         address: 'House #123, Street 4, University Town',
         admissionDate: '2023-09-01',
-        feeStatus: 'paid',
         attendancePercentage: 85,
         cgpa: 3.5,
         isActive: true,
@@ -435,49 +433,13 @@ const initializeAllTables = () => {
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      },
-      {
-        _id: 'ANN-002',
-        title: 'Fee Submission Deadline',
-        content: 'Last date for fee submission is 30th of this month.',
-        type: 'fee',
-        priority: 'high',
-        targetAudience: 'students',
-        postedBy: 'USR-001',
-        postedAt: new Date().toISOString(),
-        expiresAt: null,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
       }
     ];
     fs.writeFileSync(path.join(DATA_DIR, TABLES.ANNOUNCEMENTS), JSON.stringify(announcements, null, 2));
     console.log('✅ Table: announcements (2 records)');
   }
 
-  // 11. FEE RECORDS TABLE
-  if (!fs.existsSync(path.join(DATA_DIR, TABLES.FEE_RECORDS))) {
-    const feeRecords = [
-      {
-        _id: 'FEE-001',
-        studentId: 'STU-001',
-        semester: '3rd',
-        totalAmount: 45000,
-        paidAmount: 45000,
-        dueAmount: 0,
-        paymentStatus: 'paid',
-        paymentDate: new Date().toISOString(),
-        paymentMethod: 'bank_transfer',
-        transactionId: 'TXN-001-001',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-    ];
-    fs.writeFileSync(path.join(DATA_DIR, TABLES.FEE_RECORDS), JSON.stringify(feeRecords, null, 2));
-    console.log('✅ Table: feeRecords (1 record)');
-  }
-
-  // 12. LEAVE APPLICATIONS TABLE
+  // 11. LEAVE APPLICATIONS TABLE
   if (!fs.existsSync(path.join(DATA_DIR, TABLES.LEAVE_APPLICATIONS))) {
     const leaveApps = [
       {

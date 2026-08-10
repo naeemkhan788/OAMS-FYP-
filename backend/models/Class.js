@@ -16,15 +16,13 @@ const classSchema = new mongoose.Schema({
   },
   department: {
     type: String,
-    required: [true, 'Department is required'],
     enum: ['Computer Science', 'Electrical Engineering', 'Mechanical Engineering', 'Civil Engineering', 'Business Administration', 'Social Sciences', 'English', 'Mathematics', 'Other'],
     default: 'Computer Science'
   },
   semester: {
-    type: Number,
+    type: String,
     required: [true, 'Semester is required'],
-    min: [1, 'Semester must be at least 1'],
-    max: [8, 'Semester cannot exceed 8 (4-year degree)']
+    enum: ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th']
   },
   section: {
     type: String,

@@ -57,7 +57,7 @@ export default function Home() {
       role: 'student',
       gradient: 'from-blue-500 to-indigo-500',
       mockData: { name: 'John Student', email: 'john.student@oams.com', role: 'student', id: '2024001' },
-      stats: ['Attendance Check', 'Marks Sheet', 'Fee Status']
+      stats: ['Attendance Check', 'Marks Sheet', 'Progress Tracking']
     },
     {
       title: 'Faculty Dashboard',
@@ -109,7 +109,7 @@ export default function Home() {
               Next-Gen Academic Ecosystem
             </div>
             
-            <h1 className="font-outfit text-6xl lg:text-7xl xl:text-8xl font-black text-slate-900 leading-[1.05] tracking-tight">
+            <h1 className="font-outfit text-6xl lg:text-7xl xl:text-8xl font-black text-orange-300 leading-[1.05] tracking-tight">
               Elevate Your <br />
               <span className="relative inline-block mt-2">
                 <span className="absolute -inset-2 bg-gradient-to-r from-emerald-400 to-teal-400 blur-2xl opacity-20 rounded-full"></span>

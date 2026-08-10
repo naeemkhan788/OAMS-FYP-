@@ -33,12 +33,18 @@ export default function StudentDashboard() {
   const [showMyMarksModal, setShowMyMarksModal] = useState(false);
   const [showMyClassModal, setShowMyClassModal] = useState(false);
   const [showNoticesModal, setShowNoticesModal] = useState(false);
+  const [showNotificationsPanel, setShowNotificationsPanel] = useState(false);
 
   // Student Data States
   const [myAttendance, setMyAttendance] = useState([]);
   const [myMarks, setMyMarks] = useState([]);
+  const [aggregatedMarks, setAggregatedMarks] = useState([]);
+  const [marksLoading, setMarksLoading] = useState(false);
   const [myClass, setMyClass] = useState(null);
   const [notices, setNotices] = useState([]);
+  const [unreadNoticeCount, setUnreadNoticeCount] = useState(0);
+  const [hasNewAttendance, setHasNewAttendance] = useState(false);
+  const [hasNewMarks, setHasNewMarks] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -98,15 +104,40 @@ export default function StudentDashboard() {
             },
           ]);
 
-          // Set recent marks as activity
+          // Set recent marks as activity - individual records with teacher info
           const marks = data.data.recentMarks?.map((mark, idx) => ({
-            id: idx + 1,
-            type: 'marks',
+            id: mark._id || `mark-${idx}`,
+            date: mark.assessmentDate || mark.publishedAt || mark.createdAt || new Date().toISOString(),
+            teacher: mark.teacher?.name || mark.teacherName || 'Unknown',
+            activityType: mark.assessmentType || 'Assignment',
+            maxMarks: mark.maxMarks || 0,
+            obtainedMarks: mark.marksObtained || 0,
             subject: mark.subject || 'Subject',
-            date: mark.assessmentDate ? new Date(mark.assessmentDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-            score: `${mark.marks || 0}/${mark.totalMarks || 100}`
+            title: mark.title || 'Assessment',
+            createdAt: mark.createdAt,
+            updatedAt: mark.updatedAt,
+            publishedAt: mark.publishedAt
           })) || [];
-          setRecentActivity(marks.slice(0, 4));
+
+          // Add recent attendance to activity
+          const attendance = data.data.recentAttendance?.map((record, idx) => ({
+            id: record._id || `attendance-${idx}`,
+            date: record.date || new Date().toISOString(),
+            teacher: record.teacher?.name || record.class?.teacher?.name || 'Unknown',
+            activityType: 'Attendance',
+            maxMarks: 1,
+            obtainedMarks: record.status === 'present' ? 1 : 0,
+            subject: record.class?.name || 'Class',
+            status: record.status || 'present',
+            createdAt: record.createdAt
+          })) || [];
+
+          // Combine and sort by date (most recent first)
+          const combinedActivity = [...marks, ...attendance].sort((a, b) => 
+            new Date(b.date) - new Date(a.date)
+          );
+
+          setRecentActivity(combinedActivity.slice(0, 10));
 
           // No mock data - only show real events
           setUpcomingEvents([]);
@@ -126,7 +157,14 @@ export default function StudentDashboard() {
   const fetchMyAttendance = async () => {
     try {
       const data = await getMyAttendance();
-      if (data.success) setMyAttendance(data.data?.attendance || []);
+      if (data.success) {
+        setMyAttendance(data.data?.attendance || []);
+        // Check for new attendance (recent records within last 24 hours)
+        const recentAttendance = (data.data?.attendance || []).filter(
+          record => new Date(record.date) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+        );
+        setHasNewAttendance(recentAttendance.length > 0);
+      }
     } catch (err) {
       console.error('Error fetching attendance:', err);
     }
@@ -136,9 +174,42 @@ export default function StudentDashboard() {
   const fetchMyMarks = async () => {
     try {
       const data = await getMyMarks();
-      if (data.success) setMyMarks(flattenMarks(data.data?.marks || []));
+      if (data.success) {
+        setMyMarks(flattenMarks(data.data?.marks || []));
+        // Check for new marks (recent assessments within last 24 hours)
+        const recentMarks = flattenMarks(data.data?.marks || []).filter(
+          mark => new Date(mark.assessmentDate) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+        );
+        setHasNewMarks(recentMarks.length > 0);
+      }
     } catch (err) {
       console.error('Error fetching marks:', err);
+    }
+  };
+
+  // Fetch aggregated marks for student
+  const fetchAggregatedMarks = async () => {
+    try {
+      setMarksLoading(true);
+      const token = localStorage.getItem('token');
+      console.log('[StudentDashboard] Fetching aggregated marks...');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/aggregated/student`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      console.log('[StudentDashboard] Aggregated marks response:', data);
+      if (data.success) {
+        setAggregatedMarks(data.data.marks || []);
+        console.log('[StudentDashboard] Aggregated marks loaded:', (data.data.marks || []).length);
+      } else {
+        console.error('[StudentDashboard] Failed to fetch aggregated marks:', data.message);
+        setAggregatedMarks([]);
+      }
+    } catch (err) {
+      console.error('[StudentDashboard] Error fetching aggregated marks:', err);
+      setAggregatedMarks([]);
+    } finally {
+      setMarksLoading(false);
     }
   };
 
@@ -156,13 +227,38 @@ export default function StudentDashboard() {
   const fetchNotices = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices/student`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       const data = await response.json();
-      if (data.success) setNotices(data.data || []);
+      if (data.success) {
+        setNotices(data.data.notices || []);
+        // Calculate unread count
+        const unreadCount = (data.data.notices || []).filter(n => !n.isRead).length;
+        setUnreadNoticeCount(unreadCount);
+      }
     } catch (err) {
       console.error('Error fetching notices:', err);
+    }
+  };
+
+  // Mark all notices as read when opening modal
+  const markAllNoticesAsRead = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const unreadNotices = notices.filter(n => !n.isRead);
+      
+      for (const notice of unreadNotices) {
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices/${notice._id}/student-read`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Refresh notices after marking
+      await fetchNotices();
+    } catch (err) {
+      console.error('Error marking notices as read:', err);
     }
   };
 
@@ -247,9 +343,26 @@ export default function StudentDashboard() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-primary-900">Student Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's your academic overview — live from database</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-primary-900">Student Dashboard</h1>
+          <p className="text-gray-600">Welcome back! Here's your academic overview — live from database</p>
+        </div>
+        <div className="relative">
+          <button 
+            onClick={() => { setShowNotificationsPanel(true); fetchNotifications(); }}
+            className="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors relative"
+          >
+            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {unreadNoticeCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadNoticeCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -281,40 +394,64 @@ export default function StudentDashboard() {
         {/* Recent Activity */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-primary-900 mb-4">Recent Activity</h2>
-          <div className="space-y-4">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    activity.type === 'attendance' ? 'bg-green-50' :
-                    activity.type === 'marks' ? 'bg-blue-50' :
-                    activity.type === 'fee' ? 'bg-red-50' : 'bg-gray-50'
-                  }`}>
-                    {activity.type === 'attendance' && '✓'}
-                    {activity.type === 'marks' && '📝'}
-                    {activity.type === 'fee' && '💰'}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-primary-900">{activity.subject}</p>
-                    <p className="text-xs text-gray-500">{activity.date}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  {activity.status && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {activity.status}
-                    </span>
-                  )}
-                  {activity.score && (
-                    <span className="text-sm font-medium text-blue-600">{activity.score}</span>
-                  )}
-                  {activity.amount && (
-                    <span className="text-sm font-medium text-red-600">{activity.amount}</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          {recentActivity.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b-2 border-gray-300 bg-gray-50">
+                    <th className="text-left py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Date</th>
+                    <th className="text-left py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Teacher</th>
+                    <th className="text-left py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Activity Type</th>
+                    <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Max Marks</th>
+                    <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Obtained Marks</th>
+                    <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentActivity.map((activity) => {
+                    const formattedDate = new Date(activity.date).toLocaleDateString('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric'
+                    });
+                    
+                    // Determine status
+                    let status = 'Viewed';
+                    const now = new Date();
+                    const activityDate = new Date(activity.date);
+                    const hoursSince = (now - activityDate) / (1000 * 60 * 60);
+                    
+                    if (hoursSince < 24) {
+                      status = 'New';
+                    } else if (hoursSince < 48) {
+                      status = 'Updated';
+                    }
+                    
+                    return (
+                      <tr key={activity.id} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="py-3 px-3 text-gray-600">{formattedDate}</td>
+                        <td className="py-3 px-3 font-medium text-gray-800">{activity.teacher}</td>
+                        <td className="py-3 px-3 text-gray-600 capitalize">{activity.activityType}</td>
+                        <td className="py-3 px-3 text-center text-gray-600">{activity.maxMarks}</td>
+                        <td className="py-3 px-3 text-center font-medium text-gray-800">{activity.obtainedMarks}</td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            status === 'New' ? 'bg-green-100 text-green-800' :
+                            status === 'Updated' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">No recent marks activity found.</div>
+          )}
         </div>
 
         {/* Upcoming Events */}
@@ -346,17 +483,23 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           <button 
             onClick={() => { setShowMyAttendanceModal(true); fetchMyAttendance(); }}
-            className="flex flex-col items-center justify-center px-4 py-3 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+            className="flex flex-col items-center justify-center px-4 py-3 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors relative"
           >
+            {hasNewAttendance && (
+              <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center"></span>
+            )}
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
             <span className="text-xs">My Attendance</span>
           </button>
           <button 
-            onClick={() => { setShowMyMarksModal(true); fetchMyMarks(); }}
-            className="flex flex-col items-center justify-center px-4 py-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+            onClick={() => { setShowMyMarksModal(true); fetchAggregatedMarks(); }}
+            className="flex flex-col items-center justify-center px-4 py-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors relative"
           >
+            {hasNewMarks && (
+              <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center"></span>
+            )}
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
@@ -372,9 +515,14 @@ export default function StudentDashboard() {
             <span className="text-xs">My Class</span>
           </button>
           <button 
-            onClick={() => { setShowNoticesModal(true); fetchNotices(); }}
-            className="flex flex-col items-center justify-center px-4 py-3 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg hover:bg-yellow-100 transition-colors"
+            onClick={() => { setShowNoticesModal(true); fetchNotices(); markAllNoticesAsRead(); }}
+            className="flex flex-col items-center justify-center px-4 py-3 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg hover:bg-yellow-100 transition-colors relative"
           >
+            {unreadNoticeCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadNoticeCount}
+              </span>
+            )}
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -445,41 +593,88 @@ export default function StudentDashboard() {
       {/* My Marks Modal */}
       {showMyMarksModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full p-6 max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full p-6 max-h-[85vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-primary-900">My Marks</h2>
+              <h2 className="text-xl font-bold text-primary-900">My Marks Summary</h2>
               <button onClick={() => setShowMyMarksModal(false)} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Subject</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Type</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Marks</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {myMarks.length > 0 ? myMarks.map((mark, idx) => (
-                  <tr key={idx} className="border-b border-gray-100">
-                    <td className="py-3 px-4">{mark.subject}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs capitalize">
-                        {mark.assessmentType}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-medium">{mark.marksObtained}/{mark.maxMarks}</td>
-                    <td className="py-3 px-4">{mark.assessmentDate ? new Date(mark.assessmentDate).toLocaleDateString() : '-'}</td>
-                  </tr>
-                )) : (
-                  <tr><td colSpan="4" className="py-8 text-center text-gray-500">No marks records found</td></tr>
-                )}
-              </tbody>
-            </table>
+
+            {marksLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              </div>
+            ) : aggregatedMarks.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b-2 border-gray-300 bg-gray-50">
+                      <th className="text-left py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Subject</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Assignment</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Quiz</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Presentation</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Paper</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Attendance</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Total Obtained</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Total Max</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Percentage</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {aggregatedMarks.map((mark, idx) => (
+                      <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="py-3 px-3 font-medium">{mark.subject}</td>
+                        <td className="py-3 px-3 text-center">
+                          {mark.assignment?.obtained > 0 || mark.assignment?.max > 0 
+                            ? `${mark.assignment.obtained}/${mark.assignment.max}` 
+                            : '0/0'}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          {mark.quiz?.obtained > 0 || mark.quiz?.max > 0 
+                            ? `${mark.quiz.obtained}/${mark.quiz.max}` 
+                            : '0/0'}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          {mark.presentation?.obtained > 0 || mark.presentation?.max > 0 
+                            ? `${mark.presentation.obtained}/${mark.presentation.max}` 
+                            : '0/0'}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          {mark.paper?.obtained > 0 || mark.paper?.max > 0 
+                            ? `${mark.paper.obtained}/${mark.paper.max}` 
+                            : '0/0'}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          {mark.attendance?.obtained > 0 || mark.attendance?.max > 0 
+                            ? `${mark.attendance.obtained}/${mark.attendance.max}` 
+                            : '0/0'}
+                        </td>
+                        <td className="py-3 px-3 text-center font-semibold">{mark.totalObtained || 0}</td>
+                        <td className="py-3 px-3 text-center">{mark.totalMax || 0}</td>
+                        <td className="py-3 px-3 text-center font-semibold">{mark.percentage || '0'}%</td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            mark.grade === 'A+' || mark.grade === 'A' ? 'bg-green-100 text-green-700' :
+                            mark.grade === 'B+' || mark.grade === 'B' ? 'bg-blue-100 text-blue-700' :
+                            mark.grade === 'C+' || mark.grade === 'C' ? 'bg-yellow-100 text-yellow-700' :
+                            mark.grade === 'D+' || mark.grade === 'D' ? 'bg-orange-100 text-orange-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {mark.grade || 'F'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">No marks records found</div>
+            )}
           </div>
         </div>
       )}
@@ -536,13 +731,112 @@ export default function StudentDashboard() {
             </div>
             <div className="space-y-4">
               {notices.length > 0 ? notices.map((notice, idx) => (
-                <div key={idx} className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
-                  <h3 className="font-medium text-yellow-900">{notice.title}</h3>
-                  <p className="text-sm text-yellow-800 mt-1">{notice.message}</p>
-                  <p className="text-xs text-yellow-600 mt-2">{new Date(notice.createdAt).toLocaleDateString()}</p>
+                <div key={notice._id || idx} className={`p-4 border rounded-lg ${notice.isRead ? 'bg-gray-50 border-gray-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium text-yellow-900">{notice.title}</h3>
+                        {!notice.isRead && <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">New</span>}
+                      </div>
+                      <p className="text-sm text-yellow-800 mt-1">{notice.message}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-yellow-600">
+                        <span>From: {notice.createdBy?.name || 'Teacher'}</span>
+                        {notice.class && <span>Class: {notice.class.name} ({notice.class.code})</span>}
+                        <span>{new Date(notice.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    {!notice.isRead && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const token = localStorage.getItem('token');
+                            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices/${notice._id}/student-read`, {
+                              method: 'PATCH',
+                              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                            });
+                            fetchNotices();
+                          } catch (err) {
+                            console.error('Error marking notice as read:', err);
+                          }
+                        }}
+                        className="ml-4 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                      >
+                        Mark as Read
+                      </button>
+                    )}
+                  </div>
                 </div>
               )) : (
                 <p className="text-center text-gray-500 py-8">No notices available</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notifications Panel */}
+      {showNotificationsPanel && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden mt-16 mr-4">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-primary-900">Notifications</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={markAllNotificationsAsRead}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Mark all as read
+                </button>
+                <button onClick={() => setShowNotificationsPanel(false)} className="text-gray-400 hover:text-gray-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="overflow-y-auto max-h-[60vh]">
+              {notifications.length > 0 ? notifications.map((notification) => (
+                <div
+                  key={notification._id}
+                  onClick={() => !notification.isRead && markNotificationAsRead(notification._id)}
+                  className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
+                    notification.isRead ? 'bg-gray-50' : 'bg-white'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      !notification.isRead ? 'bg-green-500' : 'bg-gray-300'
+                    }`}></div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`px-2 py-0.5 text-xs rounded ${
+                          notification.type === 'notice' ? 'bg-yellow-100 text-yellow-800' :
+                          notification.type === 'marks' ? 'bg-blue-100 text-blue-800' :
+                          notification.type === 'assignment' ? 'bg-purple-100 text-purple-800' :
+                          notification.type === 'attendance' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}
+                        </span>
+                        {!notification.isRead && <span className="text-xs text-green-600 font-medium">New</span>}
+                      </div>
+                      <h3 className="font-medium text-gray-900">{notification.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <span>From: {notification.sender?.name || 'Teacher'}</span>
+                        {notification.class && <span>Class: {notification.class.name}</span>}
+                        <span>{new Date(notification.createdAt).toLocaleDateString()} {new Date(notification.createdAt).toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <div className="p-8 text-center text-gray-500">
+                  <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                  <p>No notifications yet</p>
+                </div>
               )}
             </div>
           </div>

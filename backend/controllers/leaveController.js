@@ -1,5 +1,7 @@
 const Leave = require('../models/Leave');
+const User = require('../models/User');
 const { validationResult } = require('express-validator');
+const { createNotification } = require('./notificationController');
 
 const isJsonDB = () => global.jsonDB !== undefined;
 
@@ -60,6 +62,21 @@ const applyLeave = async (req, res) => {
       global.jsonDB.leaves.push(leave);
       global.jsonDB.save();
 
+      // Notify admin about new leave application
+      const admins = global.jsonDB.users.filter(u => u.role === 'admin');
+      for (const admin of admins) {
+        await createNotification({
+          senderRole: userRole,
+          senderId: userId,
+          receiverRole: 'admin',
+          receiverId: admin._id,
+          type: 'leave',
+          page: 'leave',
+          title: `New Leave Application: ${leaveType}`,
+          message: `A new leave application has been submitted for ${startDate} to ${endDate}.`
+        });
+      }
+
       return res.status(201).json({
         success: true,
         message: 'Leave application submitted successfully',
@@ -79,6 +96,21 @@ const applyLeave = async (req, res) => {
       classId: processedClassId,
       attachments: attachments || []
     });
+
+    // Notify admin about new leave application
+    const admins = await User.find({ role: 'admin' });
+    for (const admin of admins) {
+      await createNotification({
+        senderRole: userRole,
+        senderId: userId,
+        receiverRole: 'admin',
+        receiverId: admin._id,
+        type: 'leave',
+        page: 'leave',
+        title: `New Leave Application: ${leaveType}`,
+        message: `A new leave application has been submitted for ${startDate} to ${endDate}.`
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -245,17 +277,18 @@ const updateLeaveStatus = async (req, res) => {
         });
       }
 
-      global.jsonDB.leaves[leaveIndex].status = status;
-      global.jsonDB.leaves[leaveIndex].approvedBy = req.user.id;
-      global.jsonDB.leaves[leaveIndex].approvedAt = new Date().toISOString();
-      global.jsonDB.leaves[leaveIndex].remarks = remarks || '';
-      global.jsonDB.leaves[leaveIndex].updatedAt = new Date().toISOString();
+      const leave = global.jsonDB.leaves[leaveIndex];
+      leave.status = status;
+      leave.approvedBy = req.user.id;
+      leave.approvedAt = new Date().toISOString();
+      leave.remarks = remarks || '';
+      leave.updatedAt = new Date().toISOString();
       global.jsonDB.save();
 
       return res.status(200).json({
         success: true,
         message: `Leave ${status} successfully`,
-        data: global.jsonDB.leaves[leaveIndex]
+        data: leave
       });
     }
 

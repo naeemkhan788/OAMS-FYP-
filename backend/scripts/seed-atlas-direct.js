@@ -164,37 +164,10 @@ async function seedAtlas() {
         postedBy: 'admin@oams.com',
         postedAt: new Date(),
         isActive: true
-      },
-      {
-        title: 'Fee Submission Deadline',
-        content: 'Last date for fee submission is 30th of this month.',
-        type: 'fee',
-        priority: 'high',
-        postedBy: 'admin@oams.com',
-        postedAt: new Date(),
-        isActive: true
       }
     ];
     await db.collection('announcements').insertMany(announcements);
-    console.log('✅ Inserted 2 announcements');
-
-    // 8. Create Fee Records Collection
-    console.log('\n📁 Creating feeRecords collection...');
-    await db.collection('feerecords').deleteMany({});
-    const feeRecords = [
-      {
-        studentEmail: 'student@oams.com',
-        semester: '3rd',
-        totalAmount: 45000,
-        paidAmount: 45000,
-        dueAmount: 0,
-        paymentStatus: 'paid',
-        paymentDate: new Date(),
-        paymentMethod: 'bank_transfer'
-      }
-    ];
-    await db.collection('feerecords').insertMany(feeRecords);
-    console.log('✅ Inserted 1 fee record');
+    console.log('✅ Inserted 1 announcement');
 
     // Summary
     console.log('\n📊 FINAL DATABASE SUMMARY');

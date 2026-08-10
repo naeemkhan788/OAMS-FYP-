@@ -33,10 +33,10 @@ const DEPARTMENTS = [
 const classValidation = [
   body('name').notEmpty().withMessage('Name is required').isLength({ max: 50 }).withMessage('Name cannot exceed 50 characters'),
   body('code').notEmpty().withMessage('Code is required').isLength({ max: 20 }).withMessage('Code cannot exceed 20 characters'),
-  body('semester').notEmpty().withMessage('Semester is required').isInt({ min: 1, max: 8 }).withMessage('Semester must be between 1 and 8'),
+  body('semester').notEmpty().withMessage('Semester is required').isIn(['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th']).withMessage('Semester must be 1st, 2nd, 3rd, 4th, 5th, 6th, 7th, or 8th'),
   body('department').optional({ nullable: true }).isIn(DEPARTMENTS).withMessage('Invalid department'),
   body('section').notEmpty().withMessage('Section is required').isIn(['A', 'B', 'C', 'D', 'E', 'F']).withMessage('Section must be A, B, C, D, E, or F'),
-  body('teacher').notEmpty().withMessage('Teacher is required'),
+  body('teacher').optional({ nullable: true }),
   body('room').notEmpty().withMessage('Room is required'),
   body('capacity').notEmpty().withMessage('Capacity is required').isInt({ min: 1 }).withMessage('Capacity must be at least 1'),
   body('academicYear').notEmpty().withMessage('Academic year is required')

@@ -70,8 +70,8 @@ export default function SignUp() {
       };
       
       const data = await registerUser(userData);
-      alert('Account created successfully! Please sign in.');
-      navigate('/signin');
+      alert('Account created successfully! Please verify your email using the OTP sent to your email (check console for development mode).');
+      navigate('/verify-otp?email=' + encodeURIComponent(email));
     } catch (error) {
       alert('Error: ' + (error.message || 'Registration failed'));
     } finally {

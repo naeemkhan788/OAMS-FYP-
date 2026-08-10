@@ -412,23 +412,11 @@ export default function Progress() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-primary-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button onClick={() => alert('Set New Goals feature coming soon!')} className="flex items-center justify-center px-4 py-3.5 bg-primary-600 font-semibold text-white rounded-xl hover:bg-primary-700 transition-all duration-200 shadow-sm hover:shadow">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            Set New Goals
-          </button>
           <button onClick={() => window.print()} className="flex items-center justify-center px-4 py-3.5 bg-accent-500 font-semibold text-white rounded-xl hover:bg-accent-600 transition-all duration-200 shadow-sm hover:shadow">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Download Progress Report
-          </button>
-          <button onClick={() => alert('Connecting to Academic Counselor...')} className="flex items-center justify-center px-4 py-3.5 bg-white border border-gray-300 font-semibold text-primary-600 rounded-xl hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Career Counseling
           </button>
         </div>
       </div>

@@ -17,7 +17,6 @@
     "phone": "+92-302-3456789",
     "address": "House #123, Street 4, University Town",
     "admissionDate": "2023-09-01",
-    "feeStatus": "paid",
     "attendancePercentage": 85,
     "cgpa": 3.5,
     "isActive": true,

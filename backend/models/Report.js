@@ -39,6 +39,13 @@ const reportSchema = new mongoose.Schema({
   department: {
     type: String,
     default: 'all'
+  },
+  isArchived: {
+    type: Boolean,
+    default: false
+  },
+  archivedAt: {
+    type: Date
   }
 }, {
   timestamps: true

@@ -5,6 +5,7 @@ const { validationResult } = require('express-validator');
 const { startOfDay, endOfDay, format, subDays } = require('date-fns');
 const { v4: uuidv4 } = require('uuid');
 const { checkLeaveForDate } = require('./leaveController');
+const { createNotification } = require('./notificationController');
 
 const isJsonDB = () => global.jsonDB !== undefined;
 
@@ -161,6 +162,20 @@ const markAttendance = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'No attendance saved — ensure students are assigned to this class'
+      });
+    }
+
+    // Create notifications for students
+    for (const data of attendanceData) {
+      await createNotification({
+        senderRole: req.user.role,
+        senderId: req.user.id,
+        receiverRole: 'student',
+        receiverId: data.studentId,
+        type: 'attendance',
+        page: 'attendance',
+        title: 'Attendance Updated',
+        message: `Your attendance for ${date} has been marked.`
       });
     }
 

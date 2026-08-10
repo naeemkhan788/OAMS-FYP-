@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import useNotifications from '../hooks/useNotifications';
+import NotificationBadge from '../components/NotificationBadge';
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -10,6 +12,25 @@ export default function AdminLayout() {
   });
   const location = useLocation();
   const navigate = useNavigate();
+  
+  const { unreadCounts, markPageAsRead } = useNotifications();
+
+  // Mark notifications as read when page changes
+  useEffect(() => {
+    const pathToPageMap = {
+      '/admin': 'dashboard',
+      '/admin/teachers': 'teachers',
+      '/admin/students': 'students',
+      '/admin/classes': 'classes',
+      '/admin/reports': 'reports',
+      '/admin/create-notice': 'notices'
+    };
+    
+    const page = pathToPageMap[location.pathname];
+    if (page && unreadCounts[page] > 0) {
+      markPageAsRead(page);
+    }
+  }, [location.pathname, unreadCounts, markPageAsRead]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -49,6 +70,7 @@ export default function AdminLayout() {
     {
       name: 'Dashboard',
       path: '/admin',
+      page: 'dashboard',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -58,6 +80,7 @@ export default function AdminLayout() {
     {
       name: 'Teachers',
       path: '/admin/teachers',
+      page: 'teachers',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -67,6 +90,7 @@ export default function AdminLayout() {
     {
       name: 'Students',
       path: '/admin/students',
+      page: 'students',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -76,6 +100,7 @@ export default function AdminLayout() {
     {
       name: 'Classes',
       path: '/admin/classes',
+      page: 'classes',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -92,20 +117,22 @@ export default function AdminLayout() {
       ),
     },
     {
-      name: 'Fees',
-      path: '/admin/fees',
+      name: 'Reports',
+      path: '/admin/reports',
+      page: 'reports',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v1a1 1 0 001 1h4a1 1 0 001-1v-1m3-2V8a2 2 0 00-2-2H8a2 2 0 00-2 2v6m9 2h.01M12 12h4.01M16 12h4M4 12h4" />
         </svg>
       ),
     },
     {
-      name: 'Reports',
-      path: '/admin/reports',
+      name: 'Send Notice',
+      path: '/admin/create-notice',
+      page: 'notices',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v1a1 1 0 001 1h4a1 1 0 001-1v-1m3-2V8a2 2 0 00-2-2H8a2 2 0 00-2 2v6m9 2h.01M12 12h4.01M16 12h4M4 12h4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
         </svg>
       ),
     },
@@ -191,6 +218,9 @@ export default function AdminLayout() {
                 >
                   {item.icon}
                   <span className="ml-3">{item.name}</span>
+                  {item.page && (
+                    <NotificationBadge count={unreadCounts[item.page] || 0} />
+                  )}
                 </Link>
               );
             })}

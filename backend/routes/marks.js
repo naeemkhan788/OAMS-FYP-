@@ -7,7 +7,9 @@ const {
   getStudentMarks,
   publishMarks,
   getMarksReport,
-  getTeacherMarks
+  getTeacherMarks,
+  getAggregatedMarksByClass,
+  getAggregatedStudentMarks
 } = require('../controllers/marksController');
 
 const router = express.Router();
@@ -20,7 +22,7 @@ const addMarksValidation = [
     .notEmpty()
     .withMessage('Subject is required'),
   body('assessmentType')
-    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'])
+    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper', 'attendance'])
     .withMessage('Invalid assessment type'),
   body('title')
     .notEmpty()
@@ -57,7 +59,7 @@ const getMarksValidation = [
     .withMessage('Subject cannot be empty'),
   query('assessmentType')
     .optional()
-    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'])
+    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper', 'attendance'])
     .withMessage('Invalid assessment type')
 ];
 
@@ -68,7 +70,7 @@ const getStudentMarksValidation = [
     .withMessage('Subject cannot be empty'),
   query('assessmentType')
     .optional()
-    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'])
+    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper', 'attendance'])
     .withMessage('Invalid assessment type')
 ];
 
@@ -80,7 +82,7 @@ const publishMarksValidation = [
     .notEmpty()
     .withMessage('Subject is required'),
   body('assessmentType')
-    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper'])
+    .isIn(['quiz', 'assignment', 'midterm', 'final', 'practical', 'project', 'presentation', 'paper', 'attendance'])
     .withMessage('Invalid assessment type'),
   body('title')
     .notEmpty()
@@ -108,5 +110,8 @@ router.get('/student/:studentId', protect, authorize('teacher', 'admin'), getStu
 router.post('/publish', protect, authorize('teacher', 'admin'), publishMarksValidation, publishMarks);
 router.get('/report', protect, authorize('teacher', 'admin'), getReportValidation, getMarksReport);
 router.get('/teacher', protect, authorize('teacher', 'admin'), getTeacherMarks);
+router.get('/aggregated/class', protect, authorize('teacher', 'admin'), getAggregatedMarksByClass);
+router.get('/aggregated/student', protect, getAggregatedStudentMarks);
+router.get('/aggregated/student/:studentId', protect, authorize('teacher', 'admin'), getAggregatedStudentMarks);
 
 module.exports = router;

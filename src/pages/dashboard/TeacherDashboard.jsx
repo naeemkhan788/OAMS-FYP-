@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
+import Notices from './teacher/Notices';
 
 export default function TeacherDashboard() {
   const [stats, setStats] = useState([]);
   const [todaySchedule, setTodaySchedule] = useState([]);
-  const [recentReviews, setRecentReviews] = useState([]);
   const [upcomingAssessments, setUpcomingAssessments] = useState([]);
   const [pendingTasks, setPendingTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [unreadNoticeCount, setUnreadNoticeCount] = useState(0);
+  const [showNoticesPage, setShowNoticesPage] = useState(false);
 
   // Modal states
   const [showMarksModal, setShowMarksModal] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
-  const [showExamModal, setShowExamModal] = useState(false);
   const [showMyStudentsModal, setShowMyStudentsModal] = useState(false);
   const [showAttendanceRecordsModal, setShowAttendanceRecordsModal] = useState(false);
   const [showMarksRecordsModal, setShowMarksRecordsModal] = useState(false);
@@ -25,6 +26,10 @@ export default function TeacherDashboard() {
   const [showClassStatsModal, setShowClassStatsModal] = useState(false);
   const [showSendNoticeModal, setShowSendNoticeModal] = useState(false);
   const [showBulkAttendanceModal, setShowBulkAttendanceModal] = useState(false);
+  const [showPresentationModal, setShowPresentationModal] = useState(false);
+  const [showPaperModal, setShowPaperModal] = useState(false);
+  const [showAttendanceMarksModal, setShowAttendanceMarksModal] = useState(false);
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   
   const [selectedStudentForPerformance, setSelectedStudentForPerformance] = useState('');
   const [studentPerformance, setStudentPerformance] = useState(null);
@@ -37,18 +42,67 @@ export default function TeacherDashboard() {
   const [myStudents, setMyStudents] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [marksRecords, setMarksRecords] = useState([]);
+  const [aggregatedMarks, setAggregatedMarks] = useState([]);
+  const [selectedMarksClass, setSelectedMarksClass] = useState('');
+  const [aggregatedMarksLoading, setAggregatedMarksLoading] = useState(false);
+  const [aggregatedMarksError, setAggregatedMarksError] = useState(null);
+  const [myAttendance, setMyAttendance] = useState([]);
+  const [showMyAttendanceModal, setShowMyAttendanceModal] = useState(false);
 
   // Form states
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedStudent, setSelectedStudent] = useState('');
-  const [marksData, setMarksData] = useState({ subject: '', marks: '', totalMarks: '100', assessmentType: 'assignment' });
-  const [quizData, setQuizData] = useState({ subject: '', quizName: '', marks: '', totalMarks: '20' });
+  const [marksData, setMarksData] = useState({ subject: '', marks: '', totalMarks: '5', assessmentType: 'assignment' });
+  const [quizData, setQuizData] = useState({ subject: '', quizName: '', marks: '', totalMarks: '5' });
+  const [presentationData, setPresentationData] = useState({ subject: '', title: '', marks: '', totalMarks: '5' });
+  const [paperData, setPaperData] = useState({ subject: '', title: '', marks: '', totalMarks: '20' });
+  const [attendanceMarksData, setAttendanceMarksData] = useState({ subject: '', marks: '', totalMarks: '5' });
+  const [assignmentData, setAssignmentData] = useState({ title: '', marks: '', totalMarks: '5' });
   const [attendanceData, setAttendanceData] = useState({ date: new Date().toISOString().split('T')[0], status: 'present' });
-  const [examData, setExamData] = useState({ subject: '', examName: '', marks: '', totalMarks: '100', examDate: '' });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(null);
+  const [validationError, setValidationError] = useState(null);
+
+  // Fetch unread notice count
+  const fetchUnreadNoticeCount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices/teacher/unread-count`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUnreadNoticeCount(data.data.count);
+      }
+    } catch (err) {
+      console.error('Error fetching unread notice count:', err);
+    }
+  };
+
+  // Mark all notices as read
+  const markAllNoticesAsRead = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices/read-all`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUnreadNoticeCount(0);
+      }
+    } catch (err) {
+      console.error('Error marking notices as read:', err);
+    }
+  };
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
@@ -121,17 +175,6 @@ export default function TeacherDashboard() {
         })) || [];
         setTodaySchedule(classesSchedule);
 
-        // Transform recent marks as reviews
-        const reviews = data.data.recentMarks?.map((mark, idx) => ({
-          id: idx + 1,
-          student: mark.student?.name || 'Student',
-          subject: mark.class?.name || 'Subject',
-          rating: 4 + Math.floor(Math.random() * 2),
-          comment: `Scored ${mark.marks || 0}/${mark.totalMarks || 100}`,
-          date: mark.createdAt ? new Date(mark.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
-        })) || [];
-        setRecentReviews(reviews.slice(0, 3));
-
         // Create tasks from upcoming assessments
         const tasks = data.data.upcomingAssessments?.map((assessment, idx) => ({
           id: idx + 1,
@@ -152,7 +195,27 @@ export default function TeacherDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchUnreadNoticeCount();
   }, []);
+
+  // Fetch teacher's own attendance
+  const fetchMyAttendance = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/teacher-attendance/my`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMyAttendance(data.data.attendance || []);
+      }
+    } catch (err) {
+      console.error('Error fetching my attendance:', err);
+    }
+  };
 
   // Fetch students when class is selected
   useEffect(() => {
@@ -167,9 +230,27 @@ export default function TeacherDashboard() {
   // Submit marks
   const handleSubmitMarks = async (e) => {
     e.preventDefault();
+    setValidationError(null);
+    
+    // Validate marks don't exceed maximum
+    const obtained = parseFloat(marksData.marks);
+    const maximum = parseFloat(marksData.totalMarks);
+    if (obtained > maximum) {
+      setValidationError(`Maximum allowed marks for ${marksData.assessmentType} is ${maximum}.`);
+      return;
+    }
+    if (obtained < 0) {
+      setValidationError('Marks cannot be negative.');
+      return;
+    }
+    
     setSubmitLoading(true);
     try {
       const token = localStorage.getItem('token');
+      // Get class info for subject
+      const classInfo = classes.find(c => c._id === selectedClass);
+      const subject = classInfo?.subjects?.[0]?.name || classInfo?.name || 'General';
+      
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/add`, {
         method: 'POST',
         headers: {
@@ -178,12 +259,12 @@ export default function TeacherDashboard() {
         },
         body: JSON.stringify({
           classId: selectedClass,
-          subject: marksData.subject,
+          subject: subject,
           assessmentType: marksData.assessmentType,
-          title: `${marksData.subject} ${marksData.assessmentType}`,
+          title: `${subject} ${marksData.assessmentType}`,
           marksData: [{
             studentId: selectedStudent,
-            marksObtained: parseFloat(marksData.marks),
+            marksObtained: Math.min(parseFloat(marksData.marks), parseFloat(marksData.totalMarks)),
             maxMarks: parseFloat(marksData.totalMarks),
             remarks: ''
           }]
@@ -196,7 +277,7 @@ export default function TeacherDashboard() {
         setTimeout(() => {
           setShowMarksModal(false);
           setSubmitSuccess(null);
-          setMarksData({ subject: '', marks: '', totalMarks: '100', assessmentType: 'assignment' });
+          setMarksData({ subject: '', marks: '', totalMarks: '5', assessmentType: 'assignment' });
           setSelectedStudent('');
         }, 1500);
       } else {
@@ -212,9 +293,27 @@ export default function TeacherDashboard() {
   // Submit quiz marks
   const handleSubmitQuiz = async (e) => {
     e.preventDefault();
+    setValidationError(null);
+    
+    // Validate marks don't exceed maximum
+    const obtained = parseFloat(quizData.marks);
+    const maximum = parseFloat(quizData.totalMarks);
+    if (obtained > maximum) {
+      setValidationError(`Maximum allowed marks for Quiz is ${maximum}.`);
+      return;
+    }
+    if (obtained < 0) {
+      setValidationError('Marks cannot be negative.');
+      return;
+    }
+    
     setSubmitLoading(true);
     try {
       const token = localStorage.getItem('token');
+      // Get class info for subject
+      const classInfo = classes.find(c => c._id === selectedClass);
+      const subject = classInfo?.subjects?.[0]?.name || classInfo?.name || 'General';
+      
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/add`, {
         method: 'POST',
         headers: {
@@ -223,12 +322,12 @@ export default function TeacherDashboard() {
         },
         body: JSON.stringify({
           classId: selectedClass,
-          subject: quizData.subject,
+          subject: subject,
           assessmentType: 'quiz',
-          title: quizData.quizName || `${quizData.subject} Quiz`,
+          title: quizData.quizName || `${subject} Quiz`,
           marksData: [{
             studentId: selectedStudent,
-            marksObtained: parseFloat(quizData.marks),
+            marksObtained: Math.min(parseFloat(quizData.marks), parseFloat(quizData.totalMarks)),
             maxMarks: parseFloat(quizData.totalMarks),
             remarks: ''
           }]
@@ -241,11 +340,263 @@ export default function TeacherDashboard() {
         setTimeout(() => {
           setShowQuizModal(false);
           setSubmitSuccess(null);
-          setQuizData({ subject: '', quizName: '', marks: '', totalMarks: '20' });
+          setQuizData({ subject: '', quizName: '', marks: '', totalMarks: '5' });
           setSelectedStudent('');
         }, 1500);
       } else {
         throw new Error(data.message || 'Failed to add quiz marks');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // Submit presentation marks
+  const handleSubmitPresentation = async (e) => {
+    e.preventDefault();
+    setValidationError(null);
+    
+    // Validate marks don't exceed maximum
+    const obtained = parseFloat(presentationData.marks);
+    const maximum = parseFloat(presentationData.totalMarks);
+    if (obtained > maximum) {
+      setValidationError(`Maximum allowed marks for Presentation is ${maximum}.`);
+      return;
+    }
+    if (obtained < 0) {
+      setValidationError('Marks cannot be negative.');
+      return;
+    }
+    
+    setSubmitLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      // Get class info for subject
+      const classInfo = classes.find(c => c._id === selectedClass);
+      const subject = classInfo?.subjects?.[0]?.name || classInfo?.name || 'General';
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/add`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          classId: selectedClass,
+          subject: subject,
+          assessmentType: 'presentation',
+          title: presentationData.title || `${subject} Presentation`,
+          marksData: [{
+            studentId: selectedStudent,
+            marksObtained: Math.min(parseFloat(presentationData.marks), parseFloat(presentationData.totalMarks)),
+            maxMarks: parseFloat(presentationData.totalMarks),
+            remarks: ''
+          }]
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSubmitSuccess('Presentation marks added successfully!');
+        setTimeout(() => {
+          setShowPresentationModal(false);
+          setSubmitSuccess(null);
+          setPresentationData({ subject: '', title: '', marks: '', totalMarks: '5' });
+          setSelectedStudent('');
+        }, 1500);
+      } else {
+        throw new Error(data.message || 'Failed to add presentation marks');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // Submit paper marks
+  const handleSubmitPaper = async (e) => {
+    e.preventDefault();
+    setValidationError(null);
+    
+    // Validate marks don't exceed maximum
+    const obtained = parseFloat(paperData.marks);
+    const maximum = parseFloat(paperData.totalMarks);
+    if (obtained > maximum) {
+      setValidationError(`Maximum allowed marks for Paper is ${maximum}.`);
+      return;
+    }
+    if (obtained < 0) {
+      setValidationError('Marks cannot be negative.');
+      return;
+    }
+    
+    setSubmitLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      // Get class info for subject
+      const classInfo = classes.find(c => c._id === selectedClass);
+      const subject = classInfo?.subjects?.[0]?.name || classInfo?.name || 'General';
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/add`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          classId: selectedClass,
+          subject: subject,
+          assessmentType: 'paper',
+          title: paperData.title || `${subject} Paper`,
+          marksData: [{
+            studentId: selectedStudent,
+            marksObtained: Math.min(parseFloat(paperData.marks), parseFloat(paperData.totalMarks)),
+            maxMarks: parseFloat(paperData.totalMarks),
+            remarks: ''
+          }]
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSubmitSuccess('Paper marks added successfully!');
+        setTimeout(() => {
+          setShowPaperModal(false);
+          setSubmitSuccess(null);
+          setPaperData({ subject: '', title: '', marks: '', totalMarks: '20' });
+          setSelectedStudent('');
+        }, 1500);
+      } else {
+        throw new Error(data.message || 'Failed to add paper marks');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // Submit attendance marks
+  const handleSubmitAttendanceMarks = async (e) => {
+    e.preventDefault();
+    setValidationError(null);
+    
+    // Validate marks don't exceed maximum
+    const obtained = parseFloat(attendanceMarksData.marks);
+    const maximum = parseFloat(attendanceMarksData.totalMarks);
+    if (obtained > maximum) {
+      setValidationError(`Maximum allowed marks for Attendance is ${maximum}.`);
+      return;
+    }
+    if (obtained < 0) {
+      setValidationError('Marks cannot be negative.');
+      return;
+    }
+    
+    setSubmitLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      // Get class info for subject
+      const classInfo = classes.find(c => c._id === selectedClass);
+      const subject = classInfo?.subjects?.[0]?.name || classInfo?.name || 'General';
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/add`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          classId: selectedClass,
+          subject: subject,
+          assessmentType: 'attendance',
+          title: `${subject} Attendance`,
+          marksData: [{
+            studentId: selectedStudent,
+            marksObtained: Math.min(parseFloat(attendanceMarksData.marks), parseFloat(attendanceMarksData.totalMarks)),
+            maxMarks: parseFloat(attendanceMarksData.totalMarks),
+            remarks: ''
+          }]
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSubmitSuccess('Attendance marks added successfully!');
+        setTimeout(() => {
+          setShowAttendanceMarksModal(false);
+          setSubmitSuccess(null);
+          setAttendanceMarksData({ subject: '', marks: '', totalMarks: '5' });
+          setSelectedStudent('');
+        }, 1500);
+      } else {
+        throw new Error(data.message || 'Failed to add attendance marks');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // Submit assignment marks
+  const handleSubmitAssignment = async (e) => {
+    e.preventDefault();
+    setValidationError(null);
+    
+    // Validate marks don't exceed maximum
+    const obtained = parseFloat(assignmentData.marks);
+    const maximum = parseFloat(assignmentData.totalMarks);
+    if (obtained > maximum) {
+      setValidationError(`Maximum allowed marks for Assignment is ${maximum}.`);
+      return;
+    }
+    if (obtained < 0) {
+      setValidationError('Marks cannot be negative.');
+      return;
+    }
+    
+    setSubmitLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      // Get class info for subject
+      const classInfo = classes.find(c => c._id === selectedClass);
+      const subject = classInfo?.subjects?.[0]?.name || classInfo?.name || 'General';
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/add`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          classId: selectedClass,
+          subject: subject,
+          assessmentType: 'assignment',
+          title: assignmentData.title || `${subject} Assignment`,
+          marksData: [{
+            studentId: selectedStudent,
+            marksObtained: Math.min(parseFloat(assignmentData.marks), parseFloat(assignmentData.totalMarks)),
+            maxMarks: parseFloat(assignmentData.totalMarks),
+            remarks: ''
+          }]
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSubmitSuccess('Assignment marks added successfully!');
+        setTimeout(() => {
+          setShowAssignmentModal(false);
+          setSubmitSuccess(null);
+          setAssignmentData({ title: '', marks: '', totalMarks: '5' });
+          setSelectedStudent('');
+        }, 1500);
+      } else {
+        throw new Error(data.message || 'Failed to add assignment marks');
       }
     } catch (err) {
       alert('Error: ' + err.message);
@@ -293,51 +644,6 @@ export default function TeacherDashboard() {
         }, 1500);
       } else {
         throw new Error(data.message || 'Failed to mark attendance');
-      }
-    } catch (err) {
-      alert('Error: ' + err.message);
-    } finally {
-      setSubmitLoading(false);
-    }
-  };
-
-  // Submit exam marks
-  const handleSubmitExam = async (e) => {
-    e.preventDefault();
-    setSubmitLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/add`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          classId: selectedClass,
-          subject: examData.subject,
-          assessmentType: 'final',
-          title: examData.examName || `${examData.subject} Exam`,
-          marksData: [{
-            studentId: selectedStudent,
-            marksObtained: parseFloat(examData.marks),
-            maxMarks: parseFloat(examData.totalMarks),
-            remarks: ''
-          }]
-        })
-      });
-      
-      const data = await response.json();
-      if (response.ok && data.success) {
-        setSubmitSuccess('Exam marks added successfully!');
-        setTimeout(() => {
-          setShowExamModal(false);
-          setSubmitSuccess(null);
-          setExamData({ subject: '', examName: '', marks: '', totalMarks: '100', examDate: '' });
-          setSelectedStudent('');
-        }, 1500);
-      } else {
-        throw new Error(data.message || 'Failed to add exam marks');
       }
     } catch (err) {
       alert('Error: ' + err.message);
@@ -406,6 +712,40 @@ export default function TeacherDashboard() {
       }
     } catch (err) {
       console.error('[TeacherDashboard] Error fetching marks:', err);
+    }
+  };
+
+  // Fetch aggregated marks for a class
+  const fetchAggregatedMarks = async (classId) => {
+    if (!classId) {
+      setAggregatedMarks([]);
+      setAggregatedMarksError(null);
+      return;
+    }
+    setAggregatedMarksLoading(true);
+    setAggregatedMarksError(null);
+    try {
+      const token = localStorage.getItem('token');
+      console.log('[TeacherDashboard] Fetching aggregated marks for class:', classId);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/marks/aggregated/class?classId=${classId}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      console.log('[TeacherDashboard] Aggregated marks response:', data);
+      if (data.success) {
+        setAggregatedMarks(data.data.marks || []);
+        console.log('[TeacherDashboard] Aggregated marks loaded:', (data.data.marks || []).length);
+      } else {
+        console.error('[TeacherDashboard] Failed to fetch aggregated marks:', data.message);
+        setAggregatedMarksError(data.message || 'Failed to fetch marks');
+        setAggregatedMarks([]);
+      }
+    } catch (err) {
+      console.error('[TeacherDashboard] Error fetching aggregated marks:', err);
+      setAggregatedMarksError(err.message || 'Network error');
+      setAggregatedMarks([]);
+    } finally {
+      setAggregatedMarksLoading(false);
     }
   };
 
@@ -523,30 +863,38 @@ export default function TeacherDashboard() {
   const handleSendNotice = async (e) => {
     e.preventDefault();
     setSubmitLoading(true);
+    setSubmitSuccess(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices`, {
+      
+      // Determine targetType based on whether a class is selected
+      const targetType = noticeForm.classId ? 'class' : 'all';
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices/teacher`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...noticeForm,
-          targetRole: 'students',
-          classId: noticeForm.classId
+          title: noticeForm.title,
+          message: noticeForm.message,
+          targetType: targetType,
+          classId: noticeForm.classId || null
         })
       });
 
-      if (response.ok) {
-        setSubmitSuccess('Notice sent successfully!');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitSuccess('Notice sent successfully to students!');
         setTimeout(() => {
           setShowSendNoticeModal(false);
           setSubmitSuccess(null);
           setNoticeForm({ title: '', message: '', classId: '' });
         }, 1500);
       } else {
-        throw new Error('Failed to send notice');
+        throw new Error(data.message || 'Failed to send notice');
       }
     } catch (err) {
       alert('Error: ' + err.message);
@@ -627,14 +975,6 @@ export default function TeacherDashboard() {
     return 'bg-green-100 text-green-800';
   };
 
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} className={i < rating ? 'text-yellow-400' : 'text-gray-300'}>
-        ★
-      </span>
-    ));
-  };
-
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -643,15 +983,34 @@ export default function TeacherDashboard() {
           <h1 className="text-2xl font-bold text-primary-900">Teacher Dashboard</h1>
           <p className="text-gray-600">Welcome back! Here's your teaching overview — live from database</p>
         </div>
-        <button
-          onClick={handleRefresh}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Notification Bell */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowNoticesPage(true);
+                markAllNoticesAsRead();
+              }}
+              className="p-3 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:bg-gray-50 transition-all"
+            >
+              🔔
+              {unreadNoticeCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                  {unreadNoticeCount}
+                </span>
+              )}
+            </button>
+          </div>
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -732,31 +1091,6 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Recent Student Reviews */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-primary-900 mb-4">Recent Student Reviews</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recentReviews.map((review) => (
-            <div key={review.id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-primary-900">{review.student}</h3>
-                <div className="flex">
-                  {renderStars(review.rating)}
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mb-2">{review.subject}</p>
-              <p className="text-sm text-gray-600 mb-2">"{review.comment}"</p>
-              <p className="text-xs text-gray-400">{review.date}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 text-center">
-          <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-            View All Reviews →
-          </button>
-        </div>
-      </div>
-
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-primary-900 mb-4">Teacher Management</h2>
@@ -780,6 +1114,15 @@ export default function TeacherDashboard() {
             <span className="text-xs">Add Marks</span>
           </button>
           <button 
+            onClick={() => setShowAssignmentModal(true)}
+            className="flex flex-col items-center justify-center px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span className="text-xs">Assignment Marks</span>
+          </button>
+          <button 
             onClick={() => setShowQuizModal(true)}
             className="flex flex-col items-center justify-center px-4 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
           >
@@ -789,13 +1132,31 @@ export default function TeacherDashboard() {
             <span className="text-xs">Quiz Marks</span>
           </button>
           <button 
-            onClick={() => setShowExamModal(true)}
-            className="flex flex-col items-center justify-center px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            onClick={() => setShowPresentationModal(true)}
+            className="flex flex-col items-center justify-center px-4 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+          >
+            <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span className="text-xs">Presentation Marks</span>
+          </button>
+          <button 
+            onClick={() => setShowPaperModal(true)}
+            className="flex flex-col items-center justify-center px-4 py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span className="text-xs">Exam Marks</span>
+            <span className="text-xs">Paper Marks</span>
+          </button>
+          <button 
+            onClick={() => setShowAttendanceMarksModal(true)}
+            className="flex flex-col items-center justify-center px-4 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+          >
+            <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span className="text-xs">Attendance Marks</span>
           </button>
           <button 
             onClick={() => { setShowMyStudentsModal(true); fetchMyStudents(); }}
@@ -807,6 +1168,15 @@ export default function TeacherDashboard() {
             <span className="text-xs">My Students</span>
           </button>
           <button 
+            onClick={() => { setShowMyAttendanceModal(true); fetchMyAttendance(); }}
+            className="flex flex-col items-center justify-center px-4 py-3 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors"
+          >
+            <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span className="text-xs">My Attendance</span>
+          </button>
+          <button 
             onClick={() => { setShowAttendanceRecordsModal(true); fetchAttendanceRecords(); }}
             className="flex flex-col items-center justify-center px-4 py-3 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
           >
@@ -815,8 +1185,8 @@ export default function TeacherDashboard() {
             </svg>
             <span className="text-xs">View Attendance</span>
           </button>
-          <button 
-            onClick={() => { setShowMarksRecordsModal(true); fetchMarksRecords(); }}
+          <button
+            onClick={() => { setShowMarksRecordsModal(true); }}
             className="flex flex-col items-center justify-center px-4 py-3 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -848,16 +1218,6 @@ export default function TeacherDashboard() {
             <span className="text-xs">Student Progress</span>
           </button>
           <button 
-            onClick={() => { setShowClassStatsModal(true); fetchClassStats(selectedClass || classes[0]?._id); }}
-            className="flex flex-col items-center justify-center px-4 py-3 bg-pink-50 text-pink-700 border border-pink-200 rounded-lg hover:bg-pink-100 transition-colors"
-          >
-            <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-            </svg>
-            <span className="text-xs">Class Stats</span>
-          </button>
-          <button 
             onClick={() => setShowBulkAttendanceModal(true)}
             className="flex flex-col items-center justify-center px-4 py-3 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors"
           >
@@ -883,7 +1243,7 @@ export default function TeacherDashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-primary-900">Add Assignment Marks</h2>
+              <h2 className="text-xl font-bold text-primary-900">Add Marks</h2>
               <button onClick={() => setShowMarksModal(false)} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -897,6 +1257,11 @@ export default function TeacherDashboard() {
               </div>
             ) : (
               <form onSubmit={handleSubmitMarks} className="space-y-4">
+                {validationError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {validationError}
+                  </div>
+                )}
                 <select 
                   className="w-full border border-gray-300 rounded-lg p-2"
                   value={selectedClass} 
@@ -921,13 +1286,26 @@ export default function TeacherDashboard() {
                   <option value="">-- Select Student --</option>
                   {students.map(student => <option key={student._id} value={student._id}>{student.name}</option>)}
                 </select>
-                <input 
+                <select 
                   className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Subject" 
-                  value={marksData.subject} 
-                  onChange={(e) => setMarksData({...marksData, subject: e.target.value})} 
-                  required 
-                />
+                  value={marksData.assessmentType} 
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    const newTotalMarks = newType === 'attendance' ? '5' : 
+                                         newType === 'quiz' ? '5' : 
+                                         newType === 'assignment' ? '5' : 
+                                         newType === 'presentation' ? '5' : 
+                                         newType === 'paper' ? '20' : '100';
+                    setMarksData({...marksData, assessmentType: newType, totalMarks: newTotalMarks});
+                  }} 
+                  required
+                >
+                  <option value="assignment">Assignment</option>
+                  <option value="quiz">Quiz</option>
+                  <option value="presentation">Presentation</option>
+                  <option value="paper">Paper</option>
+                  <option value="attendance">Attendance</option>
+                </select>
                 <div className="grid grid-cols-2 gap-2">
                   <input 
                     className="w-full border border-gray-300 rounded-lg p-2"
@@ -978,6 +1356,11 @@ export default function TeacherDashboard() {
               </div>
             ) : (
               <form onSubmit={handleSubmitQuiz} className="space-y-4">
+                {validationError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {validationError}
+                  </div>
+                )}
                 <select 
                   className="w-full border border-gray-300 rounded-lg p-2"
                   value={selectedClass} 
@@ -1002,13 +1385,6 @@ export default function TeacherDashboard() {
                   <option value="">-- Select Student --</option>
                   {students.map(student => <option key={student._id} value={student._id}>{student.name}</option>)}
                 </select>
-                <input 
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Subject" 
-                  value={quizData.subject} 
-                  onChange={(e) => setQuizData({...quizData, subject: e.target.value})} 
-                  required 
-                />
                 <input 
                   className="w-full border border-gray-300 rounded-lg p-2"
                   placeholder="Quiz Name" 
@@ -1040,6 +1416,343 @@ export default function TeacherDashboard() {
                   className="w-full py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:bg-gray-400"
                 >
                   {submitLoading ? 'Adding...' : 'Add Quiz Marks'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Presentation Modal */}
+      {showPresentationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-primary-900">Add Presentation Marks</h2>
+              <button onClick={() => setShowPresentationModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {submitSuccess ? (
+              <div className="text-center py-8">
+                <div className="text-green-500 text-5xl mb-4">✓</div>
+                <p className="text-green-600 font-medium">{submitSuccess}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitPresentation} className="space-y-4">
+                {validationError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {validationError}
+                  </div>
+                )}
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={selectedClass} 
+                  onChange={(e) => {
+                    const classId = e.target.value;
+                    setSelectedClass(classId);
+                    const selectedClassData = classes.find(c => c._id === classId);
+                    setStudents(selectedClassData?.students || []);
+                    setSelectedStudent('');
+                  }} 
+                  required
+                >
+                  <option value="">-- Select Class --</option>
+                  {classes.map(cls => <option key={cls._id} value={cls._id}>{cls.name} {cls.grade && cls.section ? `- ${cls.grade}${cls.section}` : ''} ({cls.code || 'No Code'})</option>)}
+                </select>
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={selectedStudent} 
+                  onChange={(e) => setSelectedStudent(e.target.value)} 
+                  required
+                >
+                  <option value="">-- Select Student --</option>
+                  {students.map(student => <option key={student._id} value={student._id}>{student.name}</option>)}
+                </select>
+                <input 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  placeholder="Presentation Title" 
+                  value={presentationData.title} 
+                  onChange={(e) => setPresentationData({...presentationData, title: e.target.value})} 
+                  required 
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    type="number" 
+                    placeholder="Marks" 
+                    value={presentationData.marks} 
+                    onChange={(e) => setPresentationData({...presentationData, marks: e.target.value})} 
+                    required 
+                  />
+                  <input 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    type="number" 
+                    placeholder="Total" 
+                    value={presentationData.totalMarks} 
+                    onChange={(e) => setPresentationData({...presentationData, totalMarks: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={submitLoading}
+                  className="w-full py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:bg-gray-400"
+                >
+                  {submitLoading ? 'Adding...' : 'Add Presentation Marks'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Paper Modal */}
+      {showPaperModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-primary-900">Add Paper Marks</h2>
+              <button onClick={() => setShowPaperModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {submitSuccess ? (
+              <div className="text-center py-8">
+                <div className="text-green-500 text-5xl mb-4">✓</div>
+                <p className="text-green-600 font-medium">{submitSuccess}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitPaper} className="space-y-4">
+                {validationError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {validationError}
+                  </div>
+                )}
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={selectedClass} 
+                  onChange={(e) => {
+                    const classId = e.target.value;
+                    setSelectedClass(classId);
+                    const selectedClassData = classes.find(c => c._id === classId);
+                    setStudents(selectedClassData?.students || []);
+                    setSelectedStudent('');
+                  }} 
+                  required
+                >
+                  <option value="">-- Select Class --</option>
+                  {classes.map(cls => <option key={cls._id} value={cls._id}>{cls.name} {cls.grade && cls.section ? `- ${cls.grade}${cls.section}` : ''} ({cls.code || 'No Code'})</option>)}
+                </select>
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={selectedStudent} 
+                  onChange={(e) => setSelectedStudent(e.target.value)} 
+                  required
+                >
+                  <option value="">-- Select Student --</option>
+                  {students.map(student => <option key={student._id} value={student._id}>{student.name}</option>)}
+                </select>
+                <input 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  placeholder="Paper Title" 
+                  value={paperData.title} 
+                  onChange={(e) => setPaperData({...paperData, title: e.target.value})} 
+                  required 
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    type="number" 
+                    placeholder="Marks" 
+                    value={paperData.marks} 
+                    onChange={(e) => setPaperData({...paperData, marks: e.target.value})} 
+                    required 
+                  />
+                  <input 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    type="number" 
+                    placeholder="Total" 
+                    value={paperData.totalMarks} 
+                    onChange={(e) => setPaperData({...paperData, totalMarks: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={submitLoading}
+                  className="w-full py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 disabled:bg-gray-400"
+                >
+                  {submitLoading ? 'Adding...' : 'Add Paper Marks'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Attendance Marks Modal */}
+      {showAttendanceMarksModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-primary-900">Add Attendance Marks</h2>
+              <button onClick={() => setShowAttendanceMarksModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {submitSuccess ? (
+              <div className="text-center py-8">
+                <div className="text-green-500 text-5xl mb-4">✓</div>
+                <p className="text-green-600 font-medium">{submitSuccess}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitAttendanceMarks} className="space-y-4">
+                {validationError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {validationError}
+                  </div>
+                )}
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={selectedClass} 
+                  onChange={(e) => {
+                    const classId = e.target.value;
+                    setSelectedClass(classId);
+                    const selectedClassData = classes.find(c => c._id === classId);
+                    setStudents(selectedClassData?.students || []);
+                    setSelectedStudent('');
+                  }} 
+                  required
+                >
+                  <option value="">-- Select Class --</option>
+                  {classes.map(cls => <option key={cls._id} value={cls._id}>{cls.name} {cls.grade && cls.section ? `- ${cls.grade}${cls.section}` : ''} ({cls.code || 'No Code'})</option>)}
+                </select>
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={selectedStudent} 
+                  onChange={(e) => setSelectedStudent(e.target.value)} 
+                  required
+                >
+                  <option value="">-- Select Student --</option>
+                  {students.map(student => <option key={student._id} value={student._id}>{student.name}</option>)}
+                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <input 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    type="number" 
+                    placeholder="Marks" 
+                    value={attendanceMarksData.marks} 
+                    onChange={(e) => setAttendanceMarksData({...attendanceMarksData, marks: e.target.value})} 
+                    required 
+                  />
+                  <input 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    type="number" 
+                    placeholder="Total" 
+                    value={attendanceMarksData.totalMarks} 
+                    onChange={(e) => setAttendanceMarksData({...attendanceMarksData, totalMarks: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={submitLoading}
+                  className="w-full py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 disabled:bg-gray-400"
+                >
+                  {submitLoading ? 'Adding...' : 'Add Attendance Marks'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Assignment Modal */}
+      {showAssignmentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-primary-900">Add Assignment Marks</h2>
+              <button onClick={() => setShowAssignmentModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {submitSuccess ? (
+              <div className="text-center py-8">
+                <div className="text-green-500 text-5xl mb-4">✓</div>
+                <p className="text-green-600 font-medium">{submitSuccess}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitAssignment} className="space-y-4">
+                {validationError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {validationError}
+                  </div>
+                )}
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={selectedClass} 
+                  onChange={(e) => {
+                    const classId = e.target.value;
+                    setSelectedClass(classId);
+                    const selectedClassData = classes.find(c => c._id === classId);
+                    setStudents(selectedClassData?.students || []);
+                    setSelectedStudent('');
+                  }} 
+                  required
+                >
+                  <option value="">-- Select Class --</option>
+                  {classes.map(cls => <option key={cls._id} value={cls._id}>{cls.name} {cls.grade && cls.section ? `- ${cls.grade}${cls.section}` : ''} ({cls.code || 'No Code'})</option>)}
+                </select>
+                <select 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={selectedStudent} 
+                  onChange={(e) => setSelectedStudent(e.target.value)} 
+                  required
+                >
+                  <option value="">-- Select Student --</option>
+                  {students.map(student => <option key={student._id} value={student._id}>{student.name}</option>)}
+                </select>
+                <input 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  placeholder="Assignment Title" 
+                  value={assignmentData.title} 
+                  onChange={(e) => setAssignmentData({...assignmentData, title: e.target.value})} 
+                  required 
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    type="number" 
+                    placeholder="Marks" 
+                    value={assignmentData.marks} 
+                    onChange={(e) => setAssignmentData({...assignmentData, marks: e.target.value})} 
+                    required 
+                  />
+                  <input 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    type="number" 
+                    placeholder="Total (Max: 5)" 
+                    value={assignmentData.totalMarks} 
+                    onChange={(e) => setAssignmentData({...assignmentData, totalMarks: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={submitLoading}
+                  className="w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-400"
+                >
+                  {submitLoading ? 'Adding...' : 'Add Assignment Marks'}
                 </button>
               </form>
             )}
@@ -1120,98 +1833,56 @@ export default function TeacherDashboard() {
         </div>
       )}
 
-      {/* Exam Modal */}
-      {showExamModal && (
+      {/* My Attendance Modal */}
+      {showMyAttendanceModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-primary-900">Add Exam Marks</h2>
-              <button onClick={() => setShowExamModal(false)} className="text-gray-400 hover:text-gray-600">
+              <h2 className="text-xl font-bold text-primary-900">📋 My Attendance</h2>
+              <button onClick={() => setShowMyAttendanceModal(false)} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            {submitSuccess ? (
-              <div className="text-center py-8">
-                <div className="text-green-500 text-5xl mb-4">✓</div>
-                <p className="text-green-600 font-medium">{submitSuccess}</p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmitExam} className="space-y-4">
-                <select 
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  value={selectedClass} 
-                  onChange={(e) => {
-                    const classId = e.target.value;
-                    setSelectedClass(classId);
-                    const selectedClassData = classes.find(c => c._id === classId);
-                    setStudents(selectedClassData?.students || []);
-                    setSelectedStudent('');
-                  }} 
-                  required
-                >
-                  <option value="">-- Select Class --</option>
-                  {classes.map(cls => <option key={cls._id} value={cls._id}>{cls.name} {cls.grade && cls.section ? `- ${cls.grade}${cls.section}` : ''} ({cls.code || 'No Code'})</option>)}
-                </select>
-                <select 
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  value={selectedStudent} 
-                  onChange={(e) => setSelectedStudent(e.target.value)} 
-                  required
-                >
-                  <option value="">-- Select Student --</option>
-                  {students.map(student => <option key={student._id} value={student._id}>{student.name}</option>)}
-                </select>
-                <input 
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Subject" 
-                  value={examData.subject} 
-                  onChange={(e) => setExamData({...examData, subject: e.target.value})} 
-                  required 
-                />
-                <input 
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Exam Name" 
-                  value={examData.examName} 
-                  onChange={(e) => setExamData({...examData, examName: e.target.value})} 
-                  required 
-                />
-                <input 
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  type="date" 
-                  placeholder="Exam Date" 
-                  value={examData.examDate} 
-                  onChange={(e) => setExamData({...examData, examDate: e.target.value})} 
-                  required 
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <input 
-                    className="w-full border border-gray-300 rounded-lg p-2"
-                    type="number" 
-                    placeholder="Marks" 
-                    value={examData.marks} 
-                    onChange={(e) => setExamData({...examData, marks: e.target.value})} 
-                    required 
-                  />
-                  <input 
-                    className="w-full border border-gray-300 rounded-lg p-2"
-                    type="number" 
-                    placeholder="Total" 
-                    value={examData.totalMarks} 
-                    onChange={(e) => setExamData({...examData, totalMarks: e.target.value})} 
-                    required 
-                  />
-                </div>
-                <button 
-                  type="submit" 
-                  disabled={submitLoading}
-                  className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-400"
-                >
-                  {submitLoading ? 'Adding...' : 'Add Exam Marks'}
-                </button>
-              </form>
-            )}
+            <div className="space-y-2">
+              {myAttendance.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No attendance records found.</p>
+              ) : (
+                myAttendance.map((att) => (
+                  <div key={att._id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-800">{new Date(att.date).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-500">
+                          {att.checkInTime ? `Check-in: ${new Date(att.checkInTime).toLocaleTimeString()}` : ''}
+                          {att.checkOutTime ? ` | Check-out: ${new Date(att.checkOutTime).toLocaleTimeString()}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          att.status === 'present' ? 'bg-green-100 text-green-800' :
+                          att.status === 'absent' ? 'bg-red-100 text-red-800' :
+                          att.status === 'late' ? 'bg-yellow-100 text-yellow-800' :
+                          att.status === 'leave' ? 'bg-purple-100 text-purple-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {att.status.charAt(0).toUpperCase() + att.status.slice(1)}
+                        </span>
+                        {att.isLate && (
+                          <span className="text-xs text-yellow-600">
+                            {att.lateMinutes} min late
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {att.notes && (
+                      <p className="text-sm text-gray-600 mt-2">Notes: {att.notes}</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -1303,43 +1974,126 @@ export default function TeacherDashboard() {
       {/* Marks Records Modal */}
       {showMarksRecordsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full p-6 max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full p-6 max-h-[85vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-primary-900">Marks Records</h2>
+              <h2 className="text-xl font-bold text-primary-900">Student Marks Summary</h2>
               <button onClick={() => setShowMarksRecordsModal(false)} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Student</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Subject</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Type</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Marks</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {marksRecords.length > 0 ? marksRecords.map((mark, idx) => (
-                  <tr key={idx} className="border-b border-gray-100">
-                    <td className="py-3 px-4">{mark.student?.name || '-'}</td>
-                    <td className="py-3 px-4">{mark.subject}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs capitalize">
-                        {mark.assessmentType}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-medium">{mark.marks}/{mark.totalMarks}</td>
-                    <td className="py-3 px-4">{mark.assessmentDate ? new Date(mark.assessmentDate).toLocaleDateString() : '-'}</td>
-                  </tr>
-                )) : (
-                  <tr><td colSpan="5" className="py-8 text-center text-gray-500">No marks records found</td></tr>
-                )}
-              </tbody>
-            </table>
+            
+            {/* Class Selector */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Select Class</label>
+              <select 
+                className="w-full border border-gray-300 rounded-lg p-2"
+                value={selectedMarksClass}
+                onChange={(e) => { setSelectedMarksClass(e.target.value); fetchAggregatedMarks(e.target.value); }}
+              >
+                <option value="">-- Select Class --</option>
+                {classes.map((cls) => (
+                  <option key={cls._id} value={cls._id}>{cls.name} ({cls.code})</option>
+                ))}
+              </select>
+            </div>
+
+            {aggregatedMarksLoading ? (
+              <div className="text-center py-8 text-gray-500">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <p className="mt-2">Loading marks...</p>
+              </div>
+            ) : aggregatedMarksError ? (
+              <div className="text-center py-8 text-red-500">
+                <p>{aggregatedMarksError}</p>
+                <button 
+                  onClick={() => fetchAggregatedMarks(selectedMarksClass)}
+                  className="mt-2 text-purple-600 hover:underline"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : selectedMarksClass && aggregatedMarks.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b-2 border-gray-300 bg-gray-50">
+                      <th className="text-left py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Student Name</th>
+                      <th className="text-left py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Roll No</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Assignment</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Quiz</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Presentation</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Paper</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Attendance</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Total Obtained</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Total Max</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">Percentage</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 whitespace-nowrap">GPA</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {aggregatedMarks.map((mark, idx) => {
+                      const percentage = mark.totalMax > 0 ? ((mark.totalObtained / mark.totalMax) * 100).toFixed(1) : '0.0';
+                      let gpa = '0.0';
+                      if (parseFloat(percentage) >= 90) gpa = '4.0';
+                      else if (parseFloat(percentage) >= 85) gpa = '4.0';
+                      else if (parseFloat(percentage) >= 75) gpa = '3.5';
+                      else if (parseFloat(percentage) >= 70) gpa = '3.0';
+                      else if (parseFloat(percentage) >= 60) gpa = '2.5';
+                      else if (parseFloat(percentage) >= 55) gpa = '2.0';
+                      else if (parseFloat(percentage) >= 50) gpa = '1.5';
+                      else if (parseFloat(percentage) >= 40) gpa = '1.0';
+                      
+                      return (
+                        <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="py-3 px-3 font-medium">{mark.student?.name || 'Unknown'}</td>
+                          <td className="py-3 px-3">{mark.student?.studentId || '-'}</td>
+                          <td className="py-3 px-3 text-center">
+                            {mark.assignment.obtained > 0 || mark.assignment.max > 0 
+                              ? `${mark.assignment.obtained}/${mark.assignment.max}` 
+                              : '0/0'}
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            {mark.quiz.obtained > 0 || mark.quiz.max > 0 
+                              ? `${mark.quiz.obtained}/${mark.quiz.max}` 
+                              : '0/0'}
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            {mark.presentation.obtained > 0 || mark.presentation.max > 0 
+                              ? `${mark.presentation.obtained}/${mark.presentation.max}` 
+                              : '0/0'}
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            {mark.paper.obtained > 0 || mark.paper.max > 0 
+                              ? `${mark.paper.obtained}/${mark.paper.max}` 
+                              : '0/0'}
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            {mark.attendance.obtained > 0 || mark.attendance.max > 0 
+                              ? `${mark.attendance.obtained}/${mark.attendance.max}` 
+                              : '0/0'}
+                          </td>
+                          <td className="py-3 px-3 text-center font-semibold">{mark.totalObtained || 0}</td>
+                          <td className="py-3 px-3 text-center">{mark.totalMax || 0}</td>
+                          <td className="py-3 px-3 text-center font-semibold">{percentage}%</td>
+                          <td className="py-3 px-3 text-center font-semibold">{gpa}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : selectedMarksClass ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>No marks found for this class.</p>
+                <p className="text-sm mt-2">Add marks using the "Add Marks" button to populate this summary.</p>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>Please select a class to view marks.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1763,6 +2517,16 @@ export default function TeacherDashboard() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Notices Page Modal */}
+      {showNoticesPage && (
+        <Notices
+          onClose={() => {
+            setShowNoticesPage(false);
+            fetchUnreadNoticeCount();
+          }}
+        />
       )}
     </div>
   );

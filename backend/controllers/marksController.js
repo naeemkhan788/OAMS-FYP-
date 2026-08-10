@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Class = require('../models/Class');
 const { validationResult } = require('express-validator');
 const { v4: uuidv4 } = require('uuid');
+const { createNotification } = require('./notificationController');
 
 const isJsonDB = () => global.jsonDB !== undefined;
 
@@ -93,6 +94,21 @@ const addMarks = async (req, res) => {
       }
 
       global.jsonDB.save();
+      
+      // Create notifications for students
+      for (const markData of marksData) {
+        await createNotification({
+          senderRole: req.user.role,
+          senderId: req.user.id,
+          receiverRole: 'student',
+          receiverId: markData.studentId,
+          type: 'marks',
+          page: 'marks',
+          title: `New Marks Published: ${title}`,
+          message: `Your marks for ${subject} have been published.`
+        });
+      }
+      
       return res.status(200).json({
         success: true,
         message: 'Marks added successfully'
@@ -161,6 +177,20 @@ const addMarks = async (req, res) => {
     }
 
     await Promise.all(marksPromises);
+
+    // Create notifications for students
+    for (const markData of marksData) {
+      await createNotification({
+        senderRole: req.user.role,
+        senderId: req.user.id,
+        receiverRole: 'student',
+        receiverId: markData.studentId,
+        type: 'marks',
+        page: 'marks',
+        title: `New Marks Published: ${title}`,
+        message: `Your marks for ${subject} have been published.`
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -449,6 +479,7 @@ const publishMarks = async (req, res) => {
       });
 
       global.jsonDB.save();
+      
       return res.status(200).json({
         success: true,
         message: 'Marks published successfully'
@@ -484,6 +515,7 @@ const publishMarks = async (req, res) => {
       }
     );
 
+    // Create notifications for students
     res.status(200).json({
       success: true,
       message: 'Marks published successfully'
@@ -723,11 +755,428 @@ const getTeacherMarks = async (req, res) => {
   }
 };
 
+const getAggregatedMarksByClass = async (req, res) => {
+  try {
+    const { classId } = req.query;
+    const teacherId = req.user.id;
+
+    console.log('[getAggregatedMarksByClass] Class ID:', classId);
+    console.log('[getAggregatedMarksByClass] Teacher ID:', teacherId);
+
+    if (isJsonDB()) {
+      const classDoc = global.jsonDB.classes.find(c => c._id === classId);
+      if (!classDoc) {
+        return res.status(404).json({ success: false, message: 'Class not found' });
+      }
+
+      if (classDoc.teacher !== teacherId && req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Not authorized to view marks for this class' });
+      }
+
+      // Get all marks for this class
+      const classMarks = global.jsonDB.marks.filter(m => m.class === classId);
+      
+      // Group by student
+      const studentMarksMap = {};
+      classMarks.forEach(mark => {
+        if (!studentMarksMap[mark.student]) {
+          studentMarksMap[mark.student] = {
+            studentId: mark.student,
+            assignment: { obtained: 0, max: 0 },
+            quiz: { obtained: 0, max: 0 },
+            midterm: { obtained: 0, max: 0 },
+            final: { obtained: 0, max: 0 },
+            practical: { obtained: 0, max: 0 },
+            project: { obtained: 0, max: 0 },
+            presentation: { obtained: 0, max: 0 },
+            paper: { obtained: 0, max: 0 },
+            attendance: { obtained: 0, max: 0 }
+          };
+        }
+
+        const category = mark.assessmentType;
+        if (studentMarksMap[mark.student][category]) {
+          studentMarksMap[mark.student][category].obtained += mark.marksObtained || 0;
+          studentMarksMap[mark.student][category].max += mark.maxMarks || 0;
+        }
+      });
+
+      // Convert to array and calculate totals
+      const aggregatedMarks = Object.values(studentMarksMap).map(data => {
+        // Calculate totals for Assignment, Quiz, Presentation, Paper, and Attendance
+        const totalObtained = (data.assignment?.obtained || 0) + 
+                             (data.quiz?.obtained || 0) + 
+                             (data.presentation?.obtained || 0) + 
+                             (data.paper?.obtained || 0) +
+                             (data.attendance?.obtained || 0);
+
+        const totalMax = (data.assignment?.max || 0) + 
+                        (data.quiz?.max || 0) + 
+                        (data.presentation?.max || 0) + 
+                        (data.paper?.max || 0) +
+                        (data.attendance?.max || 0);
+
+        const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+        
+        let grade = 'F';
+        if (percentage >= 90) grade = 'A+';
+        else if (percentage >= 85) grade = 'A';
+        else if (percentage >= 75) grade = 'B+';
+        else if (percentage >= 70) grade = 'B';
+        else if (percentage >= 60) grade = 'C+';
+        else if (percentage >= 55) grade = 'C';
+        else if (percentage >= 50) grade = 'D+';
+        else if (percentage >= 40) grade = 'D';
+
+        const student = global.jsonDB.users.find(u => u._id === data.studentId);
+        
+        // Get the most recent update date for this student's marks
+        const studentMarkRecords = classMarks.filter(m => m.student === data.studentId);
+        const lastUpdated = studentMarkRecords.length > 0 
+          ? new Date(Math.max(...studentMarkRecords.map(m => new Date(m.updatedAt || m.createdAt))))
+          : null;
+        
+        return {
+          student: student || { _id: data.studentId, name: 'Unknown' },
+          studentId: data.studentId,
+          assignment: data.assignment,
+          quiz: data.quiz,
+          midterm: data.midterm,
+          final: data.final,
+          practical: data.practical,
+          project: data.project,
+          presentation: data.presentation,
+          paper: data.paper,
+          attendance: data.attendance,
+          totalObtained,
+          totalMax,
+          percentage: percentage.toFixed(2),
+          grade,
+          lastUpdated
+        };
+      });
+
+      return res.status(200).json({ success: true, data: { class: classDoc, marks: aggregatedMarks } });
+    }
+
+    // MongoDB Mode
+    const classDoc = await Class.findById(classId).populate('students');
+    if (!classDoc) {
+      return res.status(404).json({ success: false, message: 'Class not found' });
+    }
+
+    if (classDoc.teacher.toString() !== teacherId && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized to view marks for this class' });
+    }
+
+    const marks = await Marks.find({ class: classId }).populate('student', 'name studentId');
+    
+    // Group by student
+    const studentMarksMap = {};
+    marks.forEach(mark => {
+      // Skip marks with missing student reference (orphaned records)
+      if (!mark.student) {
+        console.warn('[AGGREGATED MARKS] Skipping mark record with missing student reference:', mark._id);
+        return;
+      }
+      
+      const studentId = mark.student._id.toString();
+      if (!studentMarksMap[studentId]) {
+        studentMarksMap[studentId] = {
+          studentId: studentId,
+          student: mark.student,
+          assignment: { obtained: 0, max: 0 },
+          quiz: { obtained: 0, max: 0 },
+          midterm: { obtained: 0, max: 0 },
+          final: { obtained: 0, max: 0 },
+          practical: { obtained: 0, max: 0 },
+          project: { obtained: 0, max: 0 },
+          presentation: { obtained: 0, max: 0 },
+          paper: { obtained: 0, max: 0 },
+          attendance: { obtained: 0, max: 0 }
+        };
+      }
+
+      const category = mark.assessmentType;
+      if (studentMarksMap[studentId][category]) {
+        studentMarksMap[studentId][category].obtained += mark.marksObtained || 0;
+        studentMarksMap[studentId][category].max += mark.maxMarks || 0;
+      }
+    });
+
+    // Convert to array and calculate totals
+    const aggregatedMarks = Object.values(studentMarksMap).map(data => {
+      // Calculate totals for Assignment, Quiz, Presentation, Paper, and Attendance
+      const totalObtained = (data.assignment?.obtained || 0) + 
+                           (data.quiz?.obtained || 0) + 
+                           (data.presentation?.obtained || 0) + 
+                           (data.paper?.obtained || 0) +
+                           (data.attendance?.obtained || 0);
+
+      const totalMax = (data.assignment?.max || 0) + 
+                      (data.quiz?.max || 0) + 
+                      (data.presentation?.max || 0) + 
+                      (data.paper?.max || 0) +
+                      (data.attendance?.max || 0);
+
+      const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+      
+      let grade = 'F';
+      if (percentage >= 90) grade = 'A+';
+      else if (percentage >= 85) grade = 'A';
+      else if (percentage >= 75) grade = 'B+';
+      else if (percentage >= 70) grade = 'B';
+      else if (percentage >= 60) grade = 'C+';
+      else if (percentage >= 55) grade = 'C';
+      else if (percentage >= 50) grade = 'D+';
+      else if (percentage >= 40) grade = 'D';
+
+      // Get the most recent update date for this student's marks
+      const studentMarkRecords = marks.filter(m => m.student && m.student._id.toString() === data.studentId);
+      const lastUpdated = studentMarkRecords.length > 0 
+        ? new Date(Math.max(...studentMarkRecords.map(m => new Date(m.updatedAt || m.createdAt))))
+        : null;
+
+      return {
+        student: data.student,
+        studentId: data.studentId,
+        assignment: data.assignment,
+        quiz: data.quiz,
+        midterm: data.midterm,
+        final: data.final,
+        practical: data.practical,
+        project: data.project,
+        presentation: data.presentation,
+        paper: data.paper,
+        attendance: data.attendance,
+        totalObtained,
+        totalMax,
+        percentage: percentage.toFixed(2),
+        grade,
+        lastUpdated
+      };
+    });
+
+    res.status(200).json({ success: true, data: { class: classDoc, marks: aggregatedMarks } });
+  } catch (error) {
+    console.error('Get aggregated marks error:', error);
+    res.status(500).json({ success: false, message: 'Server error while fetching aggregated marks' });
+  }
+};
+
+const getAggregatedStudentMarks = async (req, res) => {
+  try {
+    const studentId = req.user.role === 'student' ? req.user.id : req.params.studentId;
+
+    console.log('[getAggregatedStudentMarks] Student ID:', studentId);
+
+    if (isJsonDB()) {
+      const studentMarks = global.jsonDB.marks.filter(m => m.student === studentId);
+      if (req.user.role === 'student') {
+        // Students only see published marks
+        // For JSON DB, we'll show all marks for now
+      }
+
+      // Group by class and subject
+      const classSubjectMap = {};
+      studentMarks.forEach(mark => {
+        const key = `${mark.class}-${mark.subject}`;
+        if (!classSubjectMap[key]) {
+          classSubjectMap[key] = {
+            classId: mark.class,
+            subject: mark.subject,
+            assignment: { obtained: 0, max: 0 },
+            quiz: { obtained: 0, max: 0 },
+            midterm: { obtained: 0, max: 0 },
+            final: { obtained: 0, max: 0 },
+            practical: { obtained: 0, max: 0 },
+            project: { obtained: 0, max: 0 },
+            presentation: { obtained: 0, max: 0 },
+            paper: { obtained: 0, max: 0 },
+            attendance: { obtained: 0, max: 0 }
+          };
+        }
+
+        const category = mark.assessmentType;
+        if (classSubjectMap[key][category]) {
+          classSubjectMap[key][category].obtained += mark.marksObtained || 0;
+          classSubjectMap[key][category].max += mark.maxMarks || 0;
+        }
+      });
+
+      // Convert to array and calculate totals
+      const aggregatedMarks = Object.values(classSubjectMap).map(data => {
+        const totalObtained = Object.values(data).reduce((sum, cat) => {
+          if (typeof cat === 'object' && cat.obtained !== undefined) {
+            return sum + cat.obtained;
+          }
+          return sum;
+        }, 0);
+
+        const totalMax = Object.values(data).reduce((sum, cat) => {
+          if (typeof cat === 'object' && cat.max !== undefined) {
+            return sum + cat.max;
+          }
+          return sum;
+        }, 0);
+
+        const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+        
+        let grade = 'F';
+        if (percentage >= 90) grade = 'A+';
+        else if (percentage >= 85) grade = 'A';
+        else if (percentage >= 75) grade = 'B+';
+        else if (percentage >= 70) grade = 'B';
+        else if (percentage >= 60) grade = 'C+';
+        else if (percentage >= 55) grade = 'C';
+        else if (percentage >= 50) grade = 'D+';
+        else if (percentage >= 40) grade = 'D';
+
+        const classDoc = global.jsonDB.classes.find(c => c._id === data.classId);
+        const teacherDoc = classDoc ? global.jsonDB.users.find(u => u._id === classDoc.teacher) : null;
+
+        // Get the most recent update date for this class/subject marks
+        const subjectMarkRecords = studentMarks.filter(m => m.class === data.classId && m.subject === data.subject);
+        const lastUpdated = subjectMarkRecords.length > 0 
+          ? new Date(Math.max(...subjectMarkRecords.map(m => new Date(m.updatedAt || m.createdAt))))
+          : null;
+
+        return {
+          class: classDoc || { _id: data.classId, name: 'Unknown' },
+          teacherName: teacherDoc ? teacherDoc.name : '-',
+          subject: data.subject,
+          assignment: data.assignment,
+          quiz: data.quiz,
+          midterm: data.midterm,
+          final: data.final,
+          practical: data.practical,
+          project: data.project,
+          presentation: data.presentation,
+          paper: data.paper,
+          attendance: data.attendance,
+          totalObtained,
+          totalMax,
+          percentage: percentage.toFixed(2),
+          grade,
+          lastUpdated
+        };
+      });
+
+      return res.status(200).json({ success: true, data: { marks: aggregatedMarks } });
+    }
+
+    // MongoDB Mode
+    const query = { student: studentId };
+    if (req.user.role === 'student') {
+      query.isPublished = true;
+    }
+
+    const marks = await Marks.find(query).populate('class', 'name code grade section teacher');
+
+    // Group by class and subject
+    const classSubjectMap = {};
+    marks.forEach(mark => {
+      // Skip marks with missing class reference (orphaned records)
+      if (!mark.class) {
+        console.warn('[AGGREGATED STUDENT MARKS] Skipping mark record with missing class reference:', mark._id);
+        return;
+      }
+      
+      const key = `${mark.class._id.toString()}-${mark.subject}`;
+      if (!classSubjectMap[key]) {
+        classSubjectMap[key] = {
+          class: mark.class,
+          subject: mark.subject,
+          assignment: { obtained: 0, max: 0 },
+          quiz: { obtained: 0, max: 0 },
+          midterm: { obtained: 0, max: 0 },
+          final: { obtained: 0, max: 0 },
+          practical: { obtained: 0, max: 0 },
+          project: { obtained: 0, max: 0 },
+          presentation: { obtained: 0, max: 0 },
+          paper: { obtained: 0, max: 0 },
+          attendance: { obtained: 0, max: 0 }
+        };
+      }
+
+      const category = mark.assessmentType;
+      if (classSubjectMap[key][category]) {
+        classSubjectMap[key][category].obtained += mark.marksObtained || 0;
+        classSubjectMap[key][category].max += mark.maxMarks || 0;
+      }
+    });
+
+    // Convert to array and calculate totals
+    const aggregatedMarks = Object.values(classSubjectMap).map(data => {
+      const totalObtained = Object.values(data).reduce((sum, cat) => {
+        if (typeof cat === 'object' && cat.obtained !== undefined) {
+          return sum + cat.obtained;
+        }
+        return sum;
+      }, 0);
+
+      const totalMax = Object.values(data).reduce((sum, cat) => {
+        if (typeof cat === 'object' && cat.max !== undefined) {
+          return sum + cat.max;
+        }
+        return sum;
+      }, 0);
+
+      const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+      
+      let grade = 'F';
+      if (percentage >= 90) grade = 'A+';
+      else if (percentage >= 85) grade = 'A';
+      else if (percentage >= 75) grade = 'B+';
+      else if (percentage >= 70) grade = 'B';
+      else if (percentage >= 60) grade = 'C+';
+      else if (percentage >= 55) grade = 'C';
+      else if (percentage >= 50) grade = 'D+';
+      else if (percentage >= 40) grade = 'D';
+
+      // Get the most recent update date for this class/subject marks
+      const subjectMarkRecords = marks.filter(m => 
+        m.class && m.class._id && m.class._id.toString() === data.class._id.toString() && m.subject === data.subject
+      );
+      const lastUpdated = subjectMarkRecords.length > 0 
+        ? new Date(Math.max(...subjectMarkRecords.map(m => new Date(m.updatedAt || m.createdAt))))
+        : null;
+
+      return {
+        class: data.class,
+        teacherName: data.class.teacher ? data.class.teacher.name : '-',
+        subject: data.subject,
+        assignment: data.assignment,
+        quiz: data.quiz,
+        midterm: data.midterm,
+        final: data.final,
+        practical: data.practical,
+        project: data.project,
+        presentation: data.presentation,
+        paper: data.paper,
+        attendance: data.attendance,
+        totalObtained,
+        totalMax,
+        percentage: percentage.toFixed(2),
+        grade,
+        lastUpdated
+      };
+    });
+
+    res.status(200).json({ success: true, data: { marks: aggregatedMarks } });
+  } catch (error) {
+    console.error('Get aggregated student marks error:', error);
+    res.status(500).json({ success: false, message: 'Server error while fetching aggregated student marks' });
+  }
+};
+
 module.exports = {
   addMarks,
   getMarksByClass,
   getStudentMarks,
   publishMarks,
   getMarksReport,
-  getTeacherMarks
+  getTeacherMarks,
+  getAggregatedMarksByClass,
+  getAggregatedStudentMarks
 };

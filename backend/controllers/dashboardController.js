@@ -185,7 +185,15 @@ const getStudentDashboard = async (req, res) => {
         a.student === studentId &&
         new Date(a.date) >= startOfDay(last30Days) &&
         new Date(a.date) <= endOfDay(today)
-      );
+      ).map(a => {
+        const classDoc = global.jsonDB.classes.find(c => c._id === a.class);
+        const teacher = global.jsonDB.users.find(u => u._id === (classDoc?.teacher || a.teacher));
+        return {
+          ...a,
+          class: classDoc,
+          teacher: teacher
+        };
+      }).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
 
       const attendanceStats = {
         total: recentAttendance.length,
@@ -200,7 +208,14 @@ const getStudentDashboard = async (req, res) => {
       const recentMarks = global.jsonDB.marks
         .filter(m => m.student === studentId && m.isPublished)
         .sort((a, b) => new Date(b.assessmentDate) - new Date(a.assessmentDate))
-        .slice(0, 5);
+        .slice(0, 10)
+        .map(mark => {
+          const teacher = global.jsonDB.users.find(u => u._id === mark.teacher);
+          return {
+            ...mark,
+            teacher: teacher ? { _id: teacher._id, name: teacher.name } : null
+          };
+        });
 
       const studentMarks = global.jsonDB.marks.filter(m => m.student === studentId && m.isPublished);
       const marksStats = studentMarks.length > 0 ? {
@@ -242,6 +257,7 @@ const getStudentDashboard = async (req, res) => {
           stats: {
             attendanceStats,
             marksStats,
+          recentAttendance,
             gradeDistribution
           },
           recentMarks,
@@ -280,7 +296,8 @@ const getStudentDashboard = async (req, res) => {
         $gte: startOfDay(last30Days),
         $lte: endOfDay(today)
       }
-    });
+    }).populate('class', 'name code teacher')
+     .populate('teacher', 'name');
 
     const attendanceStats = {
       total: recentAttendance.length,
@@ -299,7 +316,7 @@ const getStudentDashboard = async (req, res) => {
     .populate('class', 'name code')
     .populate('teacher', 'name')
     .sort({ assessmentDate: -1 })
-    .limit(5);
+    .limit(10);
 
     const marksStats = await Marks.aggregate([
       { $match: { student: new mongoose.Types.ObjectId(studentId), isPublished: true } },
@@ -359,6 +376,7 @@ const getStudentDashboard = async (req, res) => {
           gradeDistribution
         },
         recentMarks,
+        recentAttendance,
         monthlyAttendance
       }
     });

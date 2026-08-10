@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
+
 const ContactInfoItem = ({ icon: Icon, title, value }) => (
   <div className="flex items-start gap-4 p-4 rounded-2xl hover:bg-emerald-50 transition-colors group">
     <div className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center shadow-sm group-hover:bg-emerald-500 group-hover:text-white transition-all">
@@ -33,16 +35,41 @@ const LocationIcon = (props) => (
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Thank you for contacting us! We will get back to you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitStatus({ type: 'success', message: data.message });
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setSubmitStatus({ type: 'error', message: data.message || 'Failed to submit form. Please try again.' });
+      }
+    } catch (error) {
+      setSubmitStatus({ type: 'error', message: 'Network error. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -119,10 +146,16 @@ export default function Contact() {
             </div>
             <button
               type="submit"
-              className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 transform hover:-translate-y-1 active:scale-95"
+              disabled={isSubmitting}
+              className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Send Inquiry
+              {isSubmitting ? 'Sending...' : 'Send Inquiry'}
             </button>
+            {submitStatus && (
+              <div className={`p-4 rounded-xl ${submitStatus.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                {submitStatus.message}
+              </div>
+            )}
           </form>
         </section>
 
@@ -132,9 +165,9 @@ export default function Contact() {
           <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 space-y-6">
             <h3 className="font-outfit text-xl font-bold text-slate-900 px-4">Contact Information</h3>
             <div className="space-y-2">
-              <ContactInfoItem icon={EmailIcon} title="Email" value="support@oams.edu" />
-              <ContactInfoItem icon={PhoneIcon} title="Phone" value="+1 (555) 123-4567" />
-              <ContactInfoItem icon={LocationIcon} title="Main Campus" value="123 Education St, LC 12345" />
+              <ContactInfoItem icon={EmailIcon} title="Email" value="zeb9504972@gmail.com" />
+              <ContactInfoItem icon={PhoneIcon} title="Phone" value="03459504972" />
+              <ContactInfoItem icon={LocationIcon} title="Main Campus" value="GPGC gohati swabi" />
             </div>
           </div>
 

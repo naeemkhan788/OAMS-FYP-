@@ -17,28 +17,34 @@ export default function Classes() {
   const [newClass, setNewClass] = useState({
     name: '',
     code: '',
-    grade: '1',
+    semester: '1st',
     section: 'A',
     room: '',
     capacity: '30',
-    academicYear: new Date().getFullYear().toString()
+    academicYear: new Date().getFullYear().toString(),
+    schedule: {
+      days: ['Monday'],
+      startTime: '09:00',
+      endTime: '10:00'
+    }
   });
 
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${API_BASE}/classes`, { headers: authHeaders() });
-        const data = await res.json();
-        if (data.success && data.data) {
-          setClasses(data.data.classes || data.data || []);
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const fetchClasses = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/classes`, { headers: authHeaders() });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setClasses(data.data.classes || data.data || []);
       }
-    };
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchClasses();
   }, []);
 
@@ -48,6 +54,7 @@ export default function Classes() {
     setSuccess(null);
 
     try {
+      console.log('Teacher creating class with semester:', newClass.semester, typeof newClass.semester);
       const user = JSON.parse(localStorage.getItem('user'));
       const res = await fetch(`${API_BASE}/classes`, {
         method: 'POST',
@@ -55,7 +62,6 @@ export default function Classes() {
         body: JSON.stringify({
           ...newClass,
           teacher: user._id,
-          grade: parseInt(newClass.grade),
           capacity: parseInt(newClass.capacity)
         })
       });
@@ -66,11 +72,16 @@ export default function Classes() {
         setNewClass({
           name: '',
           code: '',
-          grade: '1',
+          semester: '1st',
           section: 'A',
           room: '',
           capacity: '30',
-          academicYear: new Date().getFullYear().toString()
+          academicYear: new Date().getFullYear().toString(),
+          schedule: {
+            days: ['Monday'],
+            startTime: '09:00',
+            endTime: '10:00'
+          }
         });
         fetchClasses(); // Refresh classes
       } else {
@@ -280,14 +291,14 @@ export default function Classes() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
                 <select
-                  value={newClass.grade}
-                  onChange={(e) => setNewClass({ ...newClass, grade: e.target.value })}
+                  value={newClass.semester}
+                  onChange={(e) => setNewClass({ ...newClass, semester: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
-                  {[1,2,3,4,5,6,7,8,9,10,11,12].map(g => (
-                    <option key={g} value={g}>Grade {g}</option>
+                  {['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'].map(s => (
+                    <option key={s} value={s}>{s} Semester</option>
                   ))}
                 </select>
               </div>
@@ -339,6 +350,28 @@ export default function Classes() {
                 required
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                <input
+                  type="time"
+                  value={newClass.schedule?.startTime || '09:00'}
+                  onChange={(e) => setNewClass({ ...newClass, schedule: { ...newClass.schedule, startTime: e.target.value } })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                <input
+                  type="time"
+                  value={newClass.schedule?.endTime || '10:00'}
+                  onChange={(e) => setNewClass({ ...newClass, schedule: { ...newClass.schedule, endTime: e.target.value } })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  required
+                />
+              </div>
+            </div>
             <button
               type="submit"
               className="w-full md:w-auto px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
@@ -362,7 +395,7 @@ export default function Classes() {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class Code</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semester</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
@@ -375,7 +408,7 @@ export default function Classes() {
                     <tr key={cls._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-900">{cls.code}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{cls.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{cls.grade}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{cls.semester || cls.grade}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{cls.section}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{cls.students?.length || 0}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{cls.room}</td>

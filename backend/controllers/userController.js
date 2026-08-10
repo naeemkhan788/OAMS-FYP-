@@ -1,6 +1,9 @@
 const User = require('../models/User');
 const Class = require('../models/Class');
 const { validationResult } = require('express-validator');
+const { generateOTP, hashOTP, getOTPExpiration, clearOTPFields } = require('../utils/otp');
+const { sendOTPEmail } = require('../utils/email');
+const crypto = require('crypto');
 
 const isJsonDB = () => global.jsonDB !== undefined;
 
@@ -214,4 +217,207 @@ const approveRejectTeacher = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getUserById, updateUser, deleteUser, getUnassignedStudents, getPendingTeachers, approveRejectTeacher };
+const createUserByAdmin = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
+
+    const { name, email, password, role, profile } = req.body;
+
+    // Prevent admin account creation through this endpoint
+    if (role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin account creation is not allowed through this endpoint'
+      });
+    }
+
+    if (isJsonDB()) {
+      const existingUser = global.jsonDB.users.find(u => u.email === email);
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'User already exists with this email'
+        });
+      }
+
+      const userId = crypto.randomUUID();
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Generate Unique ID based on role
+      let studentId, teacherId;
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      if (role === 'teacher') {
+        teacherId = `T-${randomSuffix}`;
+      } else if (role === 'student' || !role) {
+        studentId = `S-${randomSuffix}`;
+      }
+
+      const newUser = {
+        _id: userId,
+        name,
+        email,
+        password: hashedPassword,
+        role: role || 'student',
+        studentId,
+        teacherId,
+        isActive: true,
+        isVerified: false, // Admin-created users start unverified
+        status: role === 'teacher' ? 'pending' : 'approved',
+        profile: profile || {},
+        createdAt: new Date().toISOString()
+      };
+
+      global.jsonDB.users.push(newUser);
+      global.jsonDB.save();
+
+      return res.status(201).json({
+        success: true,
+        message: 'User created successfully. Email verification required.',
+        user: {
+          _id: userId,
+          name,
+          email,
+          role: role || 'student',
+          isVerified: false,
+          status: newUser.status
+        }
+      });
+    }
+
+    // MongoDB Mode
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+
+    // Generate Unique ID based on role
+    let studentId, teacherId;
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    if (role === 'teacher') {
+      teacherId = `T-${randomSuffix}`;
+    } else if (role === 'student' || !role) {
+      studentId = `S-${randomSuffix}`;
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: role || 'student',
+      studentId,
+      teacherId,
+      profile: profile || {}
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'User created successfully. Email verification required.',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+        status: user.status
+      }
+    });
+  } catch (error) {
+    console.error('Create user by admin error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'User creation failed'
+    });
+  }
+};
+
+const sendVerificationEmail = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (isJsonDB()) {
+      const user = global.jsonDB.users.find(u => u._id === userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      if (user.isVerified) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is already verified'
+        });
+      }
+
+      // Generate and send OTP
+      const otp = generateOTP();
+      const hashedOTP = await hashOTP(otp);
+      const otpExpire = getOTPExpiration();
+
+      user.emailOTP = hashedOTP;
+      user.emailOTPExpire = otpExpire.toISOString();
+      user.otpAttempts = 0;
+      user.lastOTPSentAt = new Date().toISOString();
+
+      global.jsonDB.save();
+
+      await sendOTPEmail(user.email, otp, user.name);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Verification OTP sent to user email'
+      });
+    }
+
+    // MongoDB Mode
+    const user = await User.findById(userId).select('+emailOTP +emailOTPExpire +otpAttempts +lastOTPSentAt');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified'
+      });
+    }
+
+    // Generate and send OTP
+    const otp = generateOTP();
+    const hashedOTP = await hashOTP(otp);
+    const otpExpire = getOTPExpiration();
+
+    user.emailOTP = hashedOTP;
+    user.emailOTPExpire = otpExpire;
+    user.otpAttempts = 0;
+    user.lastOTPSentAt = new Date();
+
+    await user.save();
+
+    await sendOTPEmail(user.email, otp, user.name);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Verification OTP sent to user email'
+    });
+  } catch (error) {
+    console.error('Send verification email error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to send verification email'
+    });
+  }
+};
+
+module.exports = { getUsers, getUserById, updateUser, deleteUser, getUnassignedStudents, getPendingTeachers, approveRejectTeacher, createUserByAdmin, sendVerificationEmail };

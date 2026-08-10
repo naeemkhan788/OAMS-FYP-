@@ -3,9 +3,16 @@ import { getMyMarks } from '../../../utils/api';
 
 const flattenMarks = (groupedMarks = []) => {
   const rows = [];
+  const excludedTypes = ['final', 'practical', 'projects', 'mid term', 'midterm'];
+  
   groupedMarks.forEach((classGroup) => {
     Object.entries(classGroup.subjects || {}).forEach(([subjectName, assessments]) => {
       assessments.forEach((mark) => {
+        const assessmentType = (mark.assessmentType || 'quiz').toLowerCase();
+        // Skip excluded assessment types
+        if (excludedTypes.includes(assessmentType)) {
+          return;
+        }
         rows.push({
           subject: subjectName,
           assessmentType: mark.assessmentType || 'quiz',

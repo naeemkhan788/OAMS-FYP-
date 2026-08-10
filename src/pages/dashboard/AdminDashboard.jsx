@@ -1,22 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import Reports from './admin/Reports';
 
 const DEPARTMENTS = [
-  'Computer Science',
-  'Electrical Engineering',
-  'Mechanical Engineering',
-  'Civil Engineering',
-  'Business Administration',
-  'Social Sciences',
-  'English',
-  'Mathematics',
-  'Other'
+  'Computer Science'
 ];
 
 const emptyClassForm = {
   name: '',
   code: '',
-  semester: '',
+  semester: '1st',
   department: 'Computer Science',
   section: '',
   teacher: '',
@@ -32,6 +25,7 @@ export default function AdminDashboard() {
   const [recentActivities, setRecentActivities] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [departmentStats, setDepartmentStats] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
@@ -50,11 +44,12 @@ export default function AdminDashboard() {
   const [showViewClassesModal, setShowViewClassesModal] = useState(false);
   const [showSendNoticeModal, setShowSendNoticeModal] = useState(false);
   const [showAssignTeacherModal, setShowAssignTeacherModal] = useState(false);
-  const [showViewAssignmentsModal, setShowViewAssignmentsModal] = useState(false);
   const [showEditClassModal, setShowEditClassModal] = useState(false);
+  const [showTeacherAttendanceModal, setShowTeacherAttendanceModal] = useState(false);
+  const [showReportsModal, setShowReportsModal] = useState(false);
   
   // Sidebar Navigation State
-  const [activeView, setActiveView] = useState('dashboard'); // 'dashboard', 'assign-teacher', 'assignments', 'users', 'classes'
+  const [activeView, setActiveView] = useState('dashboard'); // 'dashboard', 'assign-teacher', 'teacher-attendance', 'users', 'classes'
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
@@ -75,23 +70,17 @@ export default function AdminDashboard() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(null);
-  const [notifications, setNotifications] = useState([]);
 
-  // Add notification helper
-  const addNotification = (message, type = 'info') => {
-    const newNotification = {
-      id: Date.now(),
-      message,
-      type,
-      timestamp: new Date().toLocaleTimeString(),
-      read: false
-    };
-    setNotifications(prev => [newNotification, ...prev].slice(0, 50)); // Keep last 50
-  };
+  // Teacher Attendance States
+  const [teacherAttendanceDate, setTeacherAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [teacherAttendanceData, setTeacherAttendanceData] = useState([]);
+  const [teacherAttendanceStats, setTeacherAttendanceStats] = useState(null);
+  const [teacherAttendanceHistory, setTeacherAttendanceHistory] = useState([]);
+  const [teacherAttendanceSearchTerm, setTeacherAttendanceSearchTerm] = useState('');
 
-  // Get available roles based on current role (exclude current role from dropdown)
+  // Get available roles based on current role (exclude current role and admin from dropdown)
   const getAvailableRoles = (currentRole) => {
-    const allRoles = ['student', 'teacher', 'admin'];
+    const allRoles = ['student', 'teacher'];
     return allRoles.filter(role => role !== currentRole);
   };
 
@@ -235,19 +224,22 @@ export default function AdminDashboard() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(userForm)
+        body: JSON.stringify({
+          ...userForm,
+          createdByAdmin: true // Flag to skip OTP verification for admin-created users
+        })
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setSubmitSuccess('User added successfully!');
+        setSubmitSuccess('User added successfully! Account is ready to use.');
         setTimeout(() => {
           setShowAddUserModal(false);
           setSubmitSuccess(null);
           setUserForm({ name: '', email: '', password: '', role: 'student' });
           handleRefresh();
-        }, 1500);
+        }, 2000);
       } else {
         throw new Error(data.message || data.error || 'Failed to add user');
       }
@@ -273,7 +265,7 @@ export default function AdminDashboard() {
       const classData = {
         name: classForm.name,
         code: classForm.code.toUpperCase(),
-        semester: parseInt(classForm.semester),
+        semester: classForm.semester,
         department: classForm.department,
         section: classForm.section.toUpperCase(),
         teacher: classForm.teacher,
@@ -316,11 +308,55 @@ export default function AdminDashboard() {
     }
   };
 
-  // Admin: Send Notice (Feature not available - no backend API)
+  // Admin: Send Notice
   const handleSendNotice = async (e) => {
     e.preventDefault();
-    alert('Notice feature coming soon! Backend API not implemented yet.');
-    setShowSendNoticeModal(false);
+    setSubmitLoading(true);
+    setError(null);
+    setSubmitSuccess(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Prepare notice data
+      const noticeData = {
+        title: noticeForm.title,
+        message: noticeForm.message,
+        targetType: noticeForm.recipients === 'all' ? 'all' : 'teacher',
+        targetTeacherId: noticeForm.recipients === 'teacher' ? selectedTeacher : null,
+        targetRole: 'teachers'
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/notices`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(noticeData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitSuccess('Notice sent successfully!');
+        
+        // Reset form and close modal
+        setNoticeForm({ title: '', message: '', recipients: 'all' });
+        setSelectedTeacher('');
+        setTimeout(() => {
+          setShowSendNoticeModal(false);
+          setSubmitSuccess(null);
+        }, 2000);
+      } else {
+        throw new Error(data.message || 'Failed to send notice');
+      }
+    } catch (err) {
+      setError(err.message);
+      alert('Error: ' + err.message);
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   // Fetch all users for viewing
@@ -439,18 +475,6 @@ export default function AdminDashboard() {
       console.log('Assign teacher response:', data);
       
       if (response.ok && data.success) {
-        // Add notification for successful assignment
-        addNotification(
-          `✅ Teacher "${teacherName}" assigned to class "${className}" successfully!`,
-          'success'
-        );
-        
-        // Add teacher notification (simulated - in production this would be sent to teacher)
-        addNotification(
-          `📧 Notification sent to ${teacherName}: You have been assigned to teach ${className}`,
-          'info'
-        );
-        
         setSubmitSuccess(`Teacher "${teacherName}" assigned to "${className}" successfully! Notification sent.`);
         // Refresh data immediately
         await fetchAllClasses();
@@ -467,7 +491,6 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Assign teacher error:', err);
-      addNotification(`❌ Failed to assign teacher: ${err.message}`, 'error');
       alert('Error: ' + err.message);
     } finally {
       setSubmitLoading(false);
@@ -484,7 +507,7 @@ export default function AdminDashboard() {
       const classData = {
         name: classForm.name,
         code: classForm.code.toUpperCase(),
-        semester: parseInt(classForm.semester),
+        semester: classForm.semester,
         department: classForm.department,
         section: classForm.section.toUpperCase(),
         teacher: classForm.teacher,
@@ -645,11 +668,109 @@ export default function AdminDashboard() {
     setShowAssignTeacherModal(true);
   };
 
-  // Open view assignments modal
-  const openViewAssignmentsModal = () => {
-    fetchAllClasses();
+  // Open teacher attendance modal
+  const openTeacherAttendanceModal = () => {
     fetchAllTeachers();
-    setShowViewAssignmentsModal(true);
+    fetchTeacherAttendanceStats();
+    fetchTeacherAttendanceByDate();
+    setShowTeacherAttendanceModal(true);
+  };
+
+  // Fetch teacher attendance stats
+  const fetchTeacherAttendanceStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/teacher-attendance/stats`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setTeacherAttendanceStats(data.data.stats);
+      }
+    } catch (err) {
+      console.error('Error fetching teacher attendance stats:', err);
+    }
+  };
+
+  // Fetch teacher attendance by date
+  const fetchTeacherAttendanceByDate = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/teacher-attendance/date/${teacherAttendanceDate}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      if (data.success) {
+        const attendanceMap = {};
+        data.data.attendance.forEach(att => {
+          attendanceMap[att.teacher._id] = att;
+        });
+        setTeacherAttendanceData(attendanceMap);
+      }
+    } catch (err) {
+      console.error('Error fetching teacher attendance:', err);
+    }
+  };
+
+  // Mark teacher attendance
+  const handleMarkTeacherAttendance = async (e) => {
+    e.preventDefault();
+    setSubmitLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      
+      const attendanceData = allTeachers.map(teacher => {
+        const existingAttendance = teacherAttendanceData[teacher._id];
+        return {
+          teacherId: teacher._id,
+          status: existingAttendance?.status || 'present',
+          checkInTime: existingAttendance?.checkInTime || null,
+          checkOutTime: existingAttendance?.checkOutTime || null,
+          notes: existingAttendance?.notes || ''
+        };
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5002/api'}/teacher-attendance`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          date: teacherAttendanceDate,
+          attendanceData
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSubmitSuccess('Teacher attendance marked successfully!');
+        await fetchTeacherAttendanceStats();
+        await fetchTeacherAttendanceByDate();
+        setTimeout(() => {
+          setSubmitSuccess(null);
+        }, 2000);
+      } else {
+        throw new Error(data.message || 'Failed to mark attendance');
+      }
+    } catch (err) {
+      console.error('Error marking teacher attendance:', err);
+      alert('Error: ' + err.message);
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // Update teacher attendance status
+  const updateTeacherAttendanceStatus = (teacherId, status) => {
+    setTeacherAttendanceData(prev => ({
+      ...prev,
+      [teacherId]: {
+        ...prev[teacherId],
+        status,
+        teacher: { _id: teacherId }
+      }
+    }));
   };
 
   // Open delete confirmation
@@ -689,7 +810,7 @@ export default function AdminDashboard() {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', color: 'bg-blue-500' },
     { id: 'assign-teacher', label: 'Assign Teacher', icon: '👨‍🏫📚', color: 'bg-orange-500' },
-    { id: 'assignments', label: 'View Assignments', icon: '📋', color: 'bg-green-500' },
+    { id: 'teacher-attendance', label: 'Teacher Attendance', icon: '📋', color: 'bg-green-500' },
     { id: 'users', label: 'Manage Users', icon: '👥', color: 'bg-purple-500' },
     { id: 'classes', label: 'Manage Classes', icon: '📚', color: 'bg-yellow-500' },
   ];
@@ -714,14 +835,14 @@ export default function AdminDashboard() {
               <span className="text-3xl">
                 {activeView === 'dashboard' && '📊'}
                 {activeView === 'assign-teacher' && '👨‍🏫'}
-                {activeView === 'assignments' && '📋'}
+                {activeView === 'teacher-attendance' && '📋'}
                 {activeView === 'users' && '👥'}
                 {activeView === 'classes' && '📚'}
               </span>
               <h1 className="text-3xl font-bold text-slate-800">
                 {activeView === 'dashboard' && 'Dashboard'}
                 {activeView === 'assign-teacher' && 'Assign Teacher'}
-                {activeView === 'assignments' && 'View Assignments'}
+                {activeView === 'teacher-attendance' && 'Teacher Attendance'}
                 {activeView === 'users' && 'Manage Users'}
                 {activeView === 'classes' && 'Manage Classes'}
               </h1>
@@ -729,7 +850,7 @@ export default function AdminDashboard() {
             <p className="text-slate-500 ml-11">
               {activeView === 'dashboard' && 'Welcome back! Here is your system overview.'}
               {activeView === 'assign-teacher' && 'Select a class and assign a teacher to it.'}
-              {activeView === 'assignments' && 'View all class-teacher assignments and statistics.'}
+              {activeView === 'teacher-attendance' && 'Mark and manage teacher attendance records.'}
               {activeView === 'users' && 'Add, edit, and manage all system users.'}
               {activeView === 'classes' && 'Create and manage classes in the system.'}
             </p>
@@ -860,67 +981,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Assignment Management Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-primary-900 mb-4">🎯 Assignment Management</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Assign Teacher to Class */}
-          <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-200">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-3xl">👨‍🏫📚</span>
-              <div>
-                <h3 className="font-semibold text-orange-800">Assign Teacher</h3>
-                <p className="text-xs text-orange-600">Link teacher to class</p>
-              </div>
-            </div>
-            <button 
-              onClick={openAssignTeacherModal}
-              className="w-full py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
-            >
-              Open Assign Teacher
-            </button>
-          </div>
-
-          {/* View Assignments */}
-          <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-3xl">📋</span>
-              <div>
-                <h3 className="font-semibold text-green-800">View Assignments</h3>
-                <p className="text-xs text-green-600">See all class assignments</p>
-              </div>
-            </div>
-            <button 
-              onClick={openViewAssignmentsModal}
-              className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-            >
-              View All Assignments
-            </button>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-3xl">📊</span>
-              <div>
-                <h3 className="font-semibold text-blue-800">Assignment Stats</h3>
-                <p className="text-xs text-blue-600">Current assignments</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="bg-white rounded-lg p-2">
-                <p className="text-lg font-bold text-blue-600">{allClasses.filter(c => c.teacher).length}</p>
-                <p className="text-xs text-gray-600">Classes with Teachers</p>
-              </div>
-              <div className="bg-white rounded-lg p-2">
-                <p className="text-lg font-bold text-green-600">{allClasses.reduce((sum, c) => sum + (c.students?.length || 0), 0)}</p>
-                <p className="text-xs text-gray-600">Students Assigned</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-primary-900 mb-4">Admin Management</h2>
@@ -961,9 +1021,15 @@ export default function AdminDashboard() {
             <span className="text-sm font-medium text-orange-700">Assign Teacher</span>
           </button>
           <button 
-            onClick={() => alert('Notice feature coming soon!')}
-            className="p-4 bg-red-50 rounded-xl shadow-sm border border-red-200 hover:shadow-md transition-shadow text-center opacity-50 cursor-not-allowed"
-            disabled
+            onClick={openTeacherAttendanceModal}
+            className="p-4 bg-green-50 rounded-xl shadow-sm border border-green-200 hover:shadow-md transition-shadow text-center min-h-[100px] flex flex-col items-center justify-center"
+          >
+            <span className="text-2xl mb-2 block">📋</span>
+            <span className="text-sm font-medium text-green-700 leading-tight">Teacher<br/>Attendance</span>
+          </button>
+          <button 
+            onClick={() => { fetchAllTeachers(); setShowSendNoticeModal(true); }}
+            className="p-4 bg-red-50 rounded-xl shadow-sm border border-red-200 hover:shadow-md transition-shadow text-center"
           >
             <span className="text-2xl mb-2 block">📧</span>
             <span className="text-sm font-medium text-red-700">Send Notice</span>
@@ -975,7 +1041,10 @@ export default function AdminDashboard() {
             <span className="text-2xl mb-2 block">✏️👤</span>
             <span className="text-sm font-medium text-indigo-700">Manage Users</span>
           </button>
-          <button className="p-4 bg-gray-50 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-center">
+          <button 
+            onClick={() => setShowReportsModal(true)}
+            className="p-4 bg-gray-50 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-center"
+          >
             <span className="text-2xl mb-2 block">📊</span>
             <span className="text-sm font-medium text-gray-700">Reports</span>
           </button>
@@ -1054,7 +1123,6 @@ export default function AdminDashboard() {
                   >
                     <option value="student">🎓 Student</option>
                     <option value="teacher">👨‍🏫 Teacher</option>
-                    <option value="admin">🔐 Admin</option>
                   </select>
                 </div>
                 <div className="pt-2">
@@ -1135,9 +1203,14 @@ export default function AdminDashboard() {
                     required
                   >
                     <option value="">Semester *</option>
-                    {[1,2,3,4,5,6,7,8].map(s => (
-                      <option key={s} value={s}>Semester {s}</option>
-                    ))}
+                    <option value="1st">1st Semester</option>
+                    <option value="2nd">2nd Semester</option>
+                    <option value="3rd">3rd Semester</option>
+                    <option value="4th">4th Semester</option>
+                    <option value="5th">5th Semester</option>
+                    <option value="6th">6th Semester</option>
+                    <option value="7th">7th Semester</option>
+                    <option value="8th">8th Semester</option>
                   </select>
                   <select
                     className="w-full border border-gray-300 rounded-lg p-2"
@@ -1459,116 +1532,150 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* View Assignments Modal */}
-      {showViewAssignmentsModal && (
+      {/* Teacher Attendance Modal */}
+      {showTeacherAttendanceModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-primary-900">📋 Class-Teacher Assignments</h2>
-              <div className="flex space-x-2">
-                <button 
-                  onClick={() => { fetchAllClasses(); fetchAllTeachers(); }}
-                  className="text-blue-500 hover:text-blue-700 text-sm"
-                  title="Refresh Data"
-                >
-                  🔄 Refresh
-                </button>
-                <button onClick={() => setShowViewAssignmentsModal(false)} className="text-gray-400 hover:text-gray-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            {/* Summary Stats */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-blue-50 rounded-lg p-3 text-center">
-                <p className="text-xl font-bold text-blue-600">{allClasses.length}</p>
-                <p className="text-xs text-gray-600">Total Classes</p>
-              </div>
-              <div className="bg-green-50 rounded-lg p-3 text-center">
-                <p className="text-xl font-bold text-green-600">{allClasses.filter(c => c.teacher).length}</p>
-                <p className="text-xs text-gray-600">With Teacher</p>
-              </div>
-              <div className="bg-orange-50 rounded-lg p-3 text-center">
-                <p className="text-xl font-bold text-orange-600">{allClasses.filter(c => !c.teacher).length}</p>
-                <p className="text-xs text-gray-600">Unassigned</p>
-              </div>
+              <h2 className="text-xl font-bold text-primary-900">📋 Teacher Attendance</h2>
+              <button onClick={() => setShowTeacherAttendanceModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
 
-            {/* Assignments List */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-gray-700 mb-2">Current Assignments</h3>
-              {allClasses.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No classes found.</p>
-              ) : (
-                allClasses.map(cls => {
-                  const teacher = allTeachers.find(t => t._id === cls.teacher);
-                  return (
-                    <div key={cls._id} className={`p-3 rounded-lg border ${cls.teacher ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium text-gray-800">{cls.name}</p>
-                          <p className="text-xs text-gray-500">Code: {cls.code} | Semester: {cls.semester || cls.grade}{cls.section}</p>
-                        </div>
-                        <div className="text-right">
-                          {cls.teacher ? (
-                            <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                              ✅ Assigned
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
-                              ⚠️ Unassigned
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="mt-2 pt-2 border-t border-gray-200">
-                        <p className="text-sm">
-                          <span className="font-medium">Teacher: </span>
-                          {teacher ? (
-                            <span className="text-green-700">{teacher.name} ({teacher.email})</span>
-                          ) : (
-                            <span className="text-orange-600">Not assigned</span>
-                          )}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Students: {cls.students?.length || 0} enrolled
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            {/* Teachers List */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <h3 className="font-semibold text-gray-700 mb-2">Available Teachers ({allTeachers.length})</h3>
-              {allTeachers.length === 0 ? (
-                <p className="text-gray-500 text-sm">No teachers found. Add teachers first.</p>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {allTeachers.map(teacher => {
-                    const assignedClasses = allClasses.filter(c => c.teacher === teacher._id);
-                    return (
-                      <div key={teacher._id} className="p-2 bg-gray-50 rounded border border-gray-200">
-                        <p className="text-sm font-medium text-gray-800">{teacher.name}</p>
-                        <p className="text-xs text-gray-500">{assignedClasses.length} classes assigned</p>
-                      </div>
-                    );
-                  })}
+            {/* Attendance Statistics */}
+            {teacherAttendanceStats && (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                <div className="bg-blue-50 rounded-lg p-3 text-center">
+                  <p className="text-xl font-bold text-blue-600">{teacherAttendanceStats.totalTeachers}</p>
+                  <p className="text-xs text-gray-600">Total Teachers</p>
                 </div>
-              )}
-            </div>
+                <div className="bg-green-50 rounded-lg p-3 text-center">
+                  <p className="text-xl font-bold text-green-600">{teacherAttendanceStats.present}</p>
+                  <p className="text-xs text-gray-600">Present</p>
+                </div>
+                <div className="bg-red-50 rounded-lg p-3 text-center">
+                  <p className="text-xl font-bold text-red-600">{teacherAttendanceStats.absent}</p>
+                  <p className="text-xs text-gray-600">Absent</p>
+                </div>
+                <div className="bg-yellow-50 rounded-lg p-3 text-center">
+                  <p className="text-xl font-bold text-yellow-600">{teacherAttendanceStats.late}</p>
+                  <p className="text-xs text-gray-600">Late</p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-3 text-center">
+                  <p className="text-xl font-bold text-purple-600">{teacherAttendanceStats.leave}</p>
+                  <p className="text-xs text-gray-600">Leave</p>
+                </div>
+              </div>
+            )}
 
-            <button 
-              onClick={() => setShowViewAssignmentsModal(false)}
-              className="w-full mt-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-            >
-              Close
-            </button>
+            {submitSuccess ? (
+              <div className="text-center py-8">
+                <div className="text-green-500 text-5xl mb-4">✓</div>
+                <p className="text-green-600 font-medium">{submitSuccess}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleMarkTeacherAttendance} className="space-y-4">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                    <input 
+                      type="date"
+                      className="w-full border border-gray-300 rounded-lg p-2"
+                      value={teacherAttendanceDate}
+                      onChange={(e) => {
+                        setTeacherAttendanceDate(e.target.value);
+                        fetchTeacherAttendanceByDate();
+                      }}
+                      required
+                    />
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => { fetchTeacherAttendanceStats(); fetchTeacherAttendanceByDate(); }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Refresh
+                  </button>
+                </div>
+
+                <div className="mb-4">
+                  <input 
+                    type="text"
+                    placeholder="Search teachers..."
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    value={teacherAttendanceSearchTerm}
+                    onChange={(e) => setTeacherAttendanceSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {allTeachers.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">No teachers found.</p>
+                  ) : (
+                    allTeachers
+                      .filter(teacher => 
+                        teacher.name.toLowerCase().includes(teacherAttendanceSearchTerm.toLowerCase()) ||
+                        teacher.email.toLowerCase().includes(teacherAttendanceSearchTerm.toLowerCase())
+                      )
+                      .map(teacher => {
+                        const attendance = teacherAttendanceData[teacher._id];
+                        return (
+                          <div key={teacher._id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-800">{teacher.name}</p>
+                                <p className="text-xs text-gray-500">{teacher.email}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <select
+                                  className="border border-gray-300 rounded-lg p-1 text-sm"
+                                  value={attendance?.status || 'present'}
+                                  onChange={(e) => updateTeacherAttendanceStatus(teacher._id, e.target.value)}
+                                >
+                                  <option value="present">✅ Present</option>
+                                  <option value="absent">❌ Absent</option>
+                                  <option value="late">⏰ Late</option>
+                                  <option value="leave">🏖️ Leave</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={submitLoading || allTeachers.length === 0}
+                  className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 font-semibold"
+                >
+                  {submitLoading ? 'Saving...' : 'Save Attendance'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Reports Modal */}
+      {showReportsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-primary-900">📊 Reports & Analytics</h2>
+              <button onClick={() => setShowReportsModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <Reports />
+            </div>
           </div>
         </div>
       )}
@@ -1623,9 +1730,14 @@ export default function AdminDashboard() {
                   required
                 >
                   <option value="">Select Semester</option>
-                  {[1,2,3,4,5,6,7,8].map(s => (
-                    <option key={s} value={s}>Semester {s}</option>
-                  ))}
+                  <option value="1st">1st Semester</option>
+                  <option value="2nd">2nd Semester</option>
+                  <option value="3rd">3rd Semester</option>
+                  <option value="4th">4th Semester</option>
+                  <option value="5th">5th Semester</option>
+                  <option value="6th">6th Semester</option>
+                  <option value="7th">7th Semester</option>
+                  <option value="8th">8th Semester</option>
                 </select>
                 <select 
                   className="w-full border border-gray-300 rounded-lg p-2"
@@ -1790,6 +1902,106 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Send Notice Modal */}
+      {showSendNoticeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 transform transition-all">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-primary-900">Send Notice</h2>
+                <p className="text-xs text-slate-500">Send a notice to teachers</p>
+              </div>
+              <button onClick={() => setShowSendNoticeModal(false)} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-all">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {submitSuccess ? (
+              <div className="text-center py-8">
+                <div className="text-green-500 text-5xl mb-4">✓</div>
+                <p className="text-green-600 font-medium">{submitSuccess}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSendNotice} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notice Title</label>
+                  <input
+                    type="text"
+                    value={noticeForm.title}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Enter notice title"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notice Message</label>
+                  <textarea
+                    value={noticeForm.message}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, message: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    rows="4"
+                    placeholder="Enter notice message"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
+                  <select
+                    value={noticeForm.recipients}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, recipients: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="all">All Teachers</option>
+                    <option value="teacher">Specific Teacher</option>
+                  </select>
+                </div>
+                {noticeForm.recipients === 'teacher' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Teacher</label>
+                    <select
+                      value={selectedTeacher}
+                      onChange={(e) => setSelectedTeacher(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    >
+                      <option value="">Select a teacher</option>
+                      {allTeachers.map((teacher) => (
+                        <option key={teacher._id} value={teacher._id}>
+                          {teacher.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    {error}
+                  </div>
+                )}
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowSendNoticeModal(false)}
+                    className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitLoading}
+                    className="flex-1 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-400"
+                  >
+                    {submitLoading ? 'Sending...' : 'Send Notice'}
+                  </button>
+                </div>
+              </form>
             )}
           </div>
         </div>
