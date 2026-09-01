@@ -25,7 +25,7 @@ export default function Students() {
     confirmPassword: '',
     department: 'Computer Science',
     year: '1st Year',
-    semester: '1st'
+    semester: '1'
   });
 
   const loadStudents = async () => {
@@ -89,7 +89,7 @@ export default function Students() {
           confirmPassword: '',
           department: 'Computer Science',
           year: '1st Year',
-          semester: '1st'
+          semester: '1'
         });
         setShowAddForm(false);
         loadStudents(); // Refresh list
@@ -373,14 +373,14 @@ export default function Students() {
                   onChange={(e) => setNewStudent({ ...newStudent, semester: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
-                  <option value="1st">1st</option>
-                  <option value="2nd">2nd</option>
-                  <option value="3rd">3rd</option>
-                  <option value="4th">4th</option>
-                  <option value="5th">5th</option>
-                  <option value="6th">6th</option>
-                  <option value="7th">7th</option>
-                  <option value="8th">8th</option>
+                  <option value="1">1st</option>
+                  <option value="2">2nd</option>
+                  <option value="3">3rd</option>
+                  <option value="4">4th</option>
+                  <option value="5">5th</option>
+                  <option value="6">6th</option>
+                  <option value="7">7th</option>
+                  <option value="8">8th</option>
                 </select>
               </div>
             </div>

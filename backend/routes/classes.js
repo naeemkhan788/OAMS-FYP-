@@ -33,7 +33,7 @@ const DEPARTMENTS = [
 const classValidation = [
   body('name').notEmpty().withMessage('Name is required').isLength({ max: 50 }).withMessage('Name cannot exceed 50 characters'),
   body('code').notEmpty().withMessage('Code is required').isLength({ max: 20 }).withMessage('Code cannot exceed 20 characters'),
-  body('semester').notEmpty().withMessage('Semester is required').isIn(['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th']).withMessage('Semester must be 1st, 2nd, 3rd, 4th, 5th, 6th, 7th, or 8th'),
+  body('semester').notEmpty().withMessage('Semester is required').isIn(['1', '2', '3', '4', '5', '6', '7', '8']).withMessage('Semester must be 1, 2, 3, 4, 5, 6, 7, or 8'),
   body('department').optional({ nullable: true }).isIn(DEPARTMENTS).withMessage('Invalid department'),
   body('section').notEmpty().withMessage('Section is required').isIn(['A', 'B', 'C', 'D', 'E', 'F']).withMessage('Section must be A, B, C, D, E, or F'),
   body('teacher').optional({ nullable: true }),

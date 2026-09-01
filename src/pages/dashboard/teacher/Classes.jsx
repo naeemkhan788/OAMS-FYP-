@@ -17,7 +17,7 @@ export default function Classes() {
   const [newClass, setNewClass] = useState({
     name: '',
     code: '',
-    semester: '1st',
+    semester: '1',
     section: 'A',
     room: '',
     capacity: '30',
@@ -72,7 +72,7 @@ export default function Classes() {
         setNewClass({
           name: '',
           code: '',
-          semester: '1st',
+          semester: '1',
           section: 'A',
           room: '',
           capacity: '30',
@@ -297,7 +297,7 @@ export default function Classes() {
                   onChange={(e) => setNewClass({ ...newClass, semester: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
-                  {['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'].map(s => (
+                  {['1', '2', '3', '4', '5', '6', '7', '8'].map(s => (
                     <option key={s} value={s}>{s} Semester</option>
                   ))}
                 </select>

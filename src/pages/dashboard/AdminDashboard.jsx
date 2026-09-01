@@ -1203,14 +1203,14 @@ export default function AdminDashboard() {
                     required
                   >
                     <option value="">Semester *</option>
-                    <option value="1st">1st Semester</option>
-                    <option value="2nd">2nd Semester</option>
-                    <option value="3rd">3rd Semester</option>
-                    <option value="4th">4th Semester</option>
-                    <option value="5th">5th Semester</option>
-                    <option value="6th">6th Semester</option>
-                    <option value="7th">7th Semester</option>
-                    <option value="8th">8th Semester</option>
+                    <option value="1">1st Semester</option>
+                    <option value="2">2nd Semester</option>
+                    <option value="3">3rd Semester</option>
+                    <option value="4">4th Semester</option>
+                    <option value="5">5th Semester</option>
+                    <option value="6">6th Semester</option>
+                    <option value="7">7th Semester</option>
+                    <option value="8">8th Semester</option>
                   </select>
                   <select
                     className="w-full border border-gray-300 rounded-lg p-2"

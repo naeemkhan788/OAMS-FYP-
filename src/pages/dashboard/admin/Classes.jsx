@@ -25,7 +25,7 @@ export default function Classes() {
   const [newClass, setNewClass] = useState({
     name: '',
     code: '',
-    semester: '1st',
+    semester: '1',
     department: 'Computer Science',
     section: 'A',
     room: '',
@@ -107,7 +107,7 @@ export default function Classes() {
         setNewClass({
           name: '',
           code: '',
-          semester: '1st',
+          semester: '1',
           department: 'Computer Science',
           section: 'A',
           room: '',
@@ -304,14 +304,14 @@ export default function Classes() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   required
                 >
-                  <option value="1st">1st Semester</option>
-                  <option value="2nd">2nd Semester</option>
-                  <option value="3rd">3rd Semester</option>
-                  <option value="4th">4th Semester</option>
-                  <option value="5th">5th Semester</option>
-                  <option value="6th">6th Semester</option>
-                  <option value="7th">7th Semester</option>
-                  <option value="8th">8th Semester</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
                 </select>
               </div>
               <div>
